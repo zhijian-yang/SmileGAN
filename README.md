@@ -1,6 +1,9 @@
 # Smile-GAN
 Smile-GAN is a semi-supervised clustering method which is designed to identify disease-related heterogeneity among the patient group. The model effectively avoid variations among normal control (CN) group and cluster patient based on disease related variations only. 
 
+![image info](./datasets/Smile-GAN.png)
+
+
 ## Requirement
 The code was implemented with the following versions of packages.
 
