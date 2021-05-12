@@ -4,7 +4,6 @@ import time
 import torch
 import numpy as np
 from torch.autograd import Variable
-from options import TrainOptions
 from data_loading import PTIterator, CNIterator, val_PT_construction, val_CN_construction
 from model import SmileGAN
 from evaluate import eval_w_distances, cluster_output, label_change
@@ -24,16 +23,16 @@ __status__ = "Development"
 
 def model_filtering(model_dirs, ncluster, validation_data):
 	"""
-    Function used for filter out models who have significantly different clustering results with others.
+	Function used for filter out models who have significantly different clustering results with others.
 	This function deal with rare failing cases of Smile-GAN
-    Args:
-       	model_dirs: list, list of dirs of all saved models
-       	ncluster: int, number of defined clusters
-       	validation_data, torch.tensor, all covariate corrected and normalized pt data used for validation
+	Args:
+		model_dirs: list, list of dirs of all saved models
+		ncluster: int, number of defined clusters
+		validation_data, torch.tensor, all covariate corrected and normalized pt data used for validation
 
-    Returns: list of index indicating outlier models
+	Returns: list of index indicating outlier models
 
-    """
+	"""
 	all_prediction_labels = []
 	for models in model_dirs:
 		model = SmileGAN()
@@ -57,17 +56,17 @@ def model_filtering(model_dirs, ncluster, validation_data):
 
 def clustering_result(model_dirs, ncluster, concensus_type, validation_data):
 	"""
-    Function used for derive final clustering results from several saved models
-    Args:
-       	model_dirs: list, list of dirs of all saved models
-       	ncluster: int, number of defined clusters
-       	concensus_type: string, the method used for deriving final clustering results with all models derived through CV
-         						choose between 'highest_matching_clustering' and 'consensus_clustering'
-       	validation_data, torch.tensor, all covariate corrected and normalized pt data used for validation
+	Function used for derive final clustering results from several saved models
+	Args:
+		model_dirs: list, list of dirs of all saved models
+		ncluster: int, number of defined clusters
+		concensus_type: string, the method used for deriving final clustering results with all models derived through CV
+								choose between 'highest_matching_clustering' and 'consensus_clustering'
+		validation_data, torch.tensor, all covariate corrected and normalized pt data used for validation
 
-    Returns: clustering outputs.
+	Returns: clustering outputs.
 
-    """
+	"""
 	all_prediction_labels = []
 	all_prediction_probabilities = []
 	for models in model_dirs:
@@ -80,7 +79,7 @@ def clustering_result(model_dirs, ncluster, concensus_type, validation_data):
 	elif concensus_type == 'consensus_clustering':
 		return consensus_clustering(all_prediction_labels, ncluster), None
 	else:
-        raise Exception("Please choose between 'highest_matching_clustering' and 'consensus_clustering'")
+		raise Exception("Please choose between 'highest_matching_clustering' and 'consensus_clustering'")
 
 
 
@@ -88,46 +87,46 @@ def single_model_clustering(data, covariate, ncluster, start_saving_epoch, max_e
 		cluster_loss_threshold, load_model, saved_model_name='converged_model', lam=9, mu=5, batchSize=25, lipschitz_k = 0.5, verbose = True, \
 		beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5, save_epoch_freq = 5):
 	"""
-    one of Smile-GAN core function for clustering. Only one model will be trained. (not recommended since result may be not reproducible)
-    Args:
-        data: dataframe, dataframe file with all ROI (input features) The dataframe contains
-        the following headers: "
-                                 "i) the first column is the participant_id;"
-                                 "iii) the second column should be the diagnosis;"
-                                 "The following column should be the extracted features. e.g., the ROI features"
-        covariate: dataframe, dataframe file with all confounding covariates to be corrected. The dataframe contains
-        the following headers: "
-                                 "i) the first column is the participant_id;"
-                                 "iii) the second column should be the diagnosis;"
-                                 "The following column should be all confounding covariates. e.g., age, sex"
-        ncluster: int, number of defined clusters
-        start_saving_epoch: int, epoch number from which model will be saved and training will be stopped if stopping criteria satisfied
-       	max_epoch: int, maximum trainig epoch: training will stop even if criteria not satisfied.
-        output_dir: str, the directory underwhich model and results will be saved
-        WD_threshold: int, chosen WD theshold for stopping criteria
-        AQ_threshold: int, chosen AQ threhold for stopping criteria
-        cluster_loss_threshold: int, chosen cluster_loss threhold for stopping criteria
-        load_model: bool, whether load one pre-saved checkpoint
+	one of Smile-GAN core function for clustering. Only one model will be trained. (not recommended since result may be not reproducible)
+	Args:
+		data: dataframe, dataframe file with all ROI (input features) The dataframe contains
+		the following headers: "
+								 "i) the first column is the participant_id;"
+								 "iii) the second column should be the diagnosis;"
+								 "The following column should be the extracted features. e.g., the ROI features"
+		covariate: dataframe, dataframe file with all confounding covariates to be corrected. The dataframe contains
+		the following headers: "
+								 "i) the first column is the participant_id;"
+								 "iii) the second column should be the diagnosis;"
+								 "The following column should be all confounding covariates. e.g., age, sex"
+		ncluster: int, number of defined clusters
+		start_saving_epoch: int, epoch number from which model will be saved and training will be stopped if stopping criteria satisfied
+		max_epoch: int, maximum trainig epoch: training will stop even if criteria not satisfied.
+		output_dir: str, the directory underwhich model and results will be saved
+		WD_threshold: int, chosen WD theshold for stopping criteria
+		AQ_threshold: int, chosen AQ threhold for stopping criteria
+		cluster_loss_threshold: int, chosen cluster_loss threhold for stopping criteria
+		load_model: bool, whether load one pre-saved checkpoint
 		saved_model_name: str, the name of the saved model
-        lam: int, hyperparameter for cluster loss
-        mu: int, hyperparameter for change loss
-        batchsize: int, batck size for training procedure
-        lipschitz_k = float, hyper parameter for weight clipping of mapping and clustering function
-        verbose: bool, choose whether to print out training procedure
-        beta1: float, parameter of ADAM optimization method
-        lr: float, learning rate
-        max_gnorm: float, maximum gradient norm for gradient clipping
-        eval_freq: int, the frequency at which the model is evaluated during training procedure
-        save_epoch_freq: int, the frequency at which the model is saved during training procedure
+		lam: int, hyperparameter for cluster loss
+		mu: int, hyperparameter for change loss
+		batchsize: int, batck size for training procedure
+		lipschitz_k = float, hyper parameter for weight clipping of mapping and clustering function
+		verbose: bool, choose whether to print out training procedure
+		beta1: float, parameter of ADAM optimization method
+		lr: float, learning rate
+		max_gnorm: float, maximum gradient norm for gradient clipping
+		eval_freq: int, the frequency at which the model is evaluated during training procedure
+		save_epoch_freq: int, the frequency at which the model is saved during training procedure
 
-    Returns: clustering outputs.
+	Returns: clustering outputs.
 
-    """
+	"""
 
 	print('Start Smile-GAN for semi-supervised clustering')
 
 	Smile_GAN_model = Smile_GAN_train(ncluster, start_saving_epoch, max_epoch, WD_threshold, AQ_threshold, \
-		cluster_loss_threshold, load_model, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5\
+		cluster_loss_threshold, load_model, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5,
 		beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5,save_epoch_freq = 5)
 
 	__, __, __, validation_data = Smile_GAN_model.parse_data(data, covariate, 0, 1)
@@ -153,45 +152,45 @@ def cross_validated_clustering(data, covariate, ncluster, fold_number, fraction,
 		cluster_loss_threshold, load_model, concensus_type, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5, verbose = True, \
 		beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5, save_epoch_freq = 5, last_saved_fold = -1):
 	"""
-    cross_validated clustering function using Smile-GAN (recommended)
-    Args:
-        data: dataframe, dataframe file with all ROI (input features) The dataframe contains
-        the following headers: "
-                                 "i) the first column is the participant_id;"
-                                 "iii) the second column should be the diagnosis;"
-                                 "The following column should be the extracted features. e.g., the ROI features"
-        covariate: dataframe, dataframe file with all confounding covariates to be corrected. The dataframe contains
-        the following headers: "
-                                 "i) the first column is the participant_id;"
-                                 "iii) the second column should be the diagnosis;"
-                                 "The following column should be all confounding covariates. e.g., age, sex"
-        ncluster: int, number of defined clusters
-        fold_number: int, number of folds for leave-out cross validation
-        fraction: float, fraction of data used for training in each fold
-        start_saving_epoch: int, epoch number from which model will be saved and training will be stopped if stopping criteria satisfied
-       	max_epoch: int, maximum trainig epoch: training will stop even if criteria not satisfied.
-        output_dir: str, the directory underwhich model and results will be saved
-        WD_threshold: int, chosen WD theshold for stopping criteria
-        AQ_threshold: int, chosen AQ threhold for stopping criteria
-        cluster_loss_threshold: int, chosen cluster_loss threhold for stopping criteria
-        ###load_model: bool, whether load one pre-saved checkpoint
-        concensus_type: string, the method used for deriving final clustering results with all models saved during CV
-         						choose between 'highest_matching_clustering' and 'consensus_clustering'
+	cross_validated clustering function using Smile-GAN (recommended)
+	Args:
+		data: dataframe, dataframe file with all ROI (input features) The dataframe contains
+		the following headers: "
+								 "i) the first column is the participant_id;"
+								 "iii) the second column should be the diagnosis;"
+								 "The following column should be the extracted features. e.g., the ROI features"
+		covariate: dataframe, dataframe file with all confounding covariates to be corrected. The dataframe contains
+		the following headers: "
+								 "i) the first column is the participant_id;"
+								 "iii) the second column should be the diagnosis;"
+								 "The following column should be all confounding covariates. e.g., age, sex"
+		ncluster: int, number of defined clusters
+		fold_number: int, number of folds for leave-out cross validation
+		fraction: float, fraction of data used for training in each fold
+		start_saving_epoch: int, epoch number from which model will be saved and training will be stopped if stopping criteria satisfied
+		max_epoch: int, maximum trainig epoch: training will stop even if criteria not satisfied.
+		output_dir: str, the directory underwhich model and results will be saved
+		WD_threshold: int, chosen WD theshold for stopping criteria
+		AQ_threshold: int, chosen AQ threhold for stopping criteria
+		cluster_loss_threshold: int, chosen cluster_loss threhold for stopping criteria
+		###load_model: bool, whether load one pre-saved checkpoint
+		concensus_type: string, the method used for deriving final clustering results with all models saved during CV
+								choose between 'highest_matching_clustering' and 'consensus_clustering'
 		saved_model_name: str, the name of the saved model
-        lam: int, hyperparameter for cluster loss
-        mu: int, hyperparameter for change loss
-        batchsize: int, batck size for training procedure
-        lipschitz_k = float, hyper parameter for weight clipping of mapping and clustering function
-        verbose: bool, choose whether to print out training procedure
-        beta1: float, parameter of ADAM optimization method
-        lr: float, learning rate
-        max_gnorm: float, maximum gradient norm for gradient clipping
-        eval_freq: int, the frequency at which the model is evaluated during training procedure
-        save_epoch_freq: int, the frequency at which the model is saved during training procedure
+		lam: int, hyperparameter for cluster loss
+		mu: int, hyperparameter for change loss
+		batchsize: int, batck size for training procedure
+		lipschitz_k = float, hyper parameter for weight clipping of mapping and clustering function
+		verbose: bool, choose whether to print out training procedure
+		beta1: float, parameter of ADAM optimization method
+		lr: float, learning rate
+		max_gnorm: float, maximum gradient norm for gradient clipping
+		eval_freq: int, the frequency at which the model is evaluated during training procedure
+		save_epoch_freq: int, the frequency at which the model is saved during training procedure
 
-    Returns: clustering outputs.
+	Returns: clustering outputs.
 
-    """
+	"""
 	
 	print('Start Smile-GAN for semi-supervised clustering')
 

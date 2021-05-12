@@ -40,13 +40,12 @@ def sample_z(real_X, ncluster, fix_class=-1):
     return z_var, z_idx
 
 def criterion_GAN(pred, target_is_real):
-    if use_sigmoid:
-        if target_is_real:
-            target_var = Variable(pred.data.new(pred.shape[0]).long().fill_(0.))
-            loss=F.cross_entropy(pred, target_var)
-        else:
-            target_var = Variable(pred.data.new(pred.shape[0]).long().fill_(1.))
-            loss = F.cross_entropy(pred, target_var)
+    if target_is_real:
+        target_var = Variable(pred.data.new(pred.shape[0]).long().fill_(0.))
+        loss=F.cross_entropy(pred, target_var)
+    else:
+        target_var = Variable(pred.data.new(pred.shape[0]).long().fill_(1.))
+        loss = F.cross_entropy(pred, target_var)
     return loss
 
 class dotdict(dict):
@@ -69,7 +68,7 @@ class SmileGAN(object):
         self.optimizer_D = None
 
         ##### definition of all criterions
-        self.criterionGAN = functools.partial(criterion_GANs)
+        self.criterionGAN = criterion_GAN
         self.criterionChange = F.l1_loss
         self.criterionCluster=F.cross_entropy
 
