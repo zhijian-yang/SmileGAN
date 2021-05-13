@@ -7,56 +7,120 @@ Smile-GAN is a semi-supervised clustering method which is designed to identify d
 Copyright (c) 2016 University of Pennsylvania. All rights reserved. See[ https://www.cbica.upenn.edu/sbia/software/license.html](https://www.cbica.upenn.edu/sbia/software/license.html)
 
 ## Installation
-The code was implemented with the following versions of packages.
+We highly recommend the users to install **Anaconda3** on your machine. After installing Anaconda3, Smile-GAN can be used following this procedure:
 
-- Python 2.7.13
-- Pytorch 1.3.1
-- Numpy 1.16.6
-- Scipy 1.2.3
-
-
-
-## Training
-For model training, it is required to provide the directory to the data file and the directory where training results will be saved in. The following command can be implemented under the 'models' directory to run ***train.py***
+We recommend the users to use the Conda virtual environment:
 
 ```bash
-$ python train.py --data_root <dir1> --save_dir <dir2>
+$ conda create --name smilegan python=3.8
 ```
-Other training options have defaulted values. Detailed explanations can be found in option.py. 
-
-## Testing
-
-After training finished, under the second directory (i.e. \<dir2\>), there are saved checkpoints and one *results.txt* file which records the training process. By loading checkpoints and using functions ***''predict\_cluster''*** and ***''predict\_Y''***, we can obtain probabilities of pattern types for each subject and derive generated patient data along each mapping direction by defining sub variable ***z***.
-
-We have provided one example ***test.py*** file, which can be used directly to check clustering accuracy of trained models on one synthetic test dataset. It is required to provide the directory to the test data file and the directory to the checkpoint. The following command can be implemented under the 'models' directory to run ***test.py***.
+Activate the virtual environment
 
 ```bash
-$ python test.py --data_root <dir1> --save_dir <dir2>
+$ conda activate smilegan
 ```
 
-## Data
+Install other SmileGAN package dependencies (go to the root folder of SmileGAN)
 
-Traning the model requires one ***.csv*** file: 
+```bash
+$ ./install_requirements.sh
+```
 
-* ***synthetic\_train\_data.csv***: the first and the second column need to be subject ID and diagnosis of subjects, with column name 'ID' and 'diagnosis' respectively. For diagnosis, 0 represents CN and 1 represents patient. Data need to be preprocessed as described in Method Section 4.4. ROI volumes need to be normalized with respect to CN subjects to ensure a mean of 1 and standard deviation of 0.1 among CN subjects for each ROI.
+Finally, we need to install SmileGAN from PyPi:
 
-
-One synthetic train data file ***synthetic\_train\_data.csv*** is provided under directory 'datasets'. These data are generated with simulated disease and non-disease related variations following procedure described in supplementary method section 1.3.1. Datapoints 0:200,200:400,400:600 are selected as subjects with three pre-defined pattern types. 
-
-By setting the option ***--view\_synthetic\_accuracy*** to be ***True***, we can monitor the change of clustering accuracy of each of three subtypes during training process.
-
-Testing also requires one ***.csv*** file:
-
-* ***synthetic\_test\_data.csv***: the first and the second column need to be subject ID and diagnosis of subjects, with column name 'ID' and 'diagnosis' respectively. CN data are no longer required for testing. ROI volumes need to be normalized with respect to CN participants in the training set to ensure a mean of 1 and standard deviation of 0.1 among CN participants for each ROI.
-
-One synthetic test data file ***synthetic\_test\_data.csv*** is also provided under directory 'datasets'. It can be used directly for ***test.py***. However, as clustering is an unsupervised task, one can also check performance of saved models on participants in training set, by simply loading ***synthetic\_train\_data.csv***.
-
-## Pretrained Model
-One trained checkpoint with name ***trained_model*** is provided under directory 'training_result'. It can be diretly used for ***test.py*** and should give an clustering accuracy of 1.0.
+```bash
+$ pip install SmileGAN
+```
 
 
-## Time Requirement
-On a 'normal' desktop computer, the training process for the provided synthetic dataset usually converges to the predefined stopping criteria within 4-8 minutes. However, 100% clustering accuracy may not be reached when stopping criteria met (around 95%-100% accuracy). By setting ***--stop*** to be False, the trainig process will continue until the maximum iteration is reached and, each time criteria met, one check point with name ***'converged\_model\_i'*** will be saved. 100% clustering accuracy can be reached in around 8-11 minutes. 
 
+## Input structure
+Main functions of SmileGAN basically takes two panda dataframes as data inputs, **data** and **covariate** (optional). Columns with name *'participant_id'* and *diagnosis* must exist in both dataframes. Some conventions for the group label/diagnosis: -1 represents healthy control (CN) and 1 represents patient (PT); categorical variables, such as sex, should be encoded to numbers: Female for 0 and Male for 1, for example. 
+
+Example for **data**:
+
+```bash
+participant_id    diagnosis    ROI1    ROI2 ...
+subject-1		    -1         325.4   603.4
+subject-2 		     1         260.5   580.3
+subject-3           -1         326.5   623.4
+subject-4            1         301.7   590.5
+subject-5            1		   293.1   595.1
+subject-6            1   	   287.8   608.9
+```
+Example for **covariate**
+
+```bash
+participant_id    diagnosis    age    sex ...
+subject-1		    -1         57.3   0
+subject-2 		     1         43.5   1
+subject-3           -1         53.8   1
+subject-4            1         56.0   0
+subject-5            1		   60.0   1
+subject-6            1   	   62.5   0
+```
+
+## Example
+We offer a toy dataset in the folder of SmileGAN/dataset.
+
+**Runing SmileGAN for clustering CN vs Subtype1 vs Subtype2 vs ...**
+
+```bash
+import pandas as pd
+from SmileGAN.Smile_GAN_clustering import single_model_clustering,cross_validated_clustering
+
+train_data = pd.read_csv('train_roi.csv')
+covariate = pd.read_csv('train_cov.csv')
+
+output_dir = "PATH_OUTPUT_DIR"
+ncluster = 3
+start_saving_epoch = 6000
+max_epoch = 10000
+
+## three parameters for stopping threhold
+WD = 0.11
+AQ = 20
+clustering_error = 0.0015
+
+## clustering without cross validation (train model only once, not recommended)
+single_model_clustering(train_data, ncluster, start_saving_epoch, max_epoch,\
+					    output_dir, WD, AQ, clustering_error, covariate=covariate)
+					    
+## clustering with cross validation (recommended)
+fold_number = 10  # number of folds the leave-out cv runs
+data_fraction = 0.8 # fraction of data used in each fold
+cross_validated_clustering(train_data, ncluster, start_saving_epoch, max_epoch,\
+					    output_dir, WD, AQ, clustering_error, covariate=covariate)
+```
+
+When using the package, ***WD***, ***AQ***, ***clustering\_error*** need to be chosen empirically. WD is recommended to be a value between 0.1-0.15, AQ is recommended to be 1/20 of patient numbers and clustering_error is recommended to be a value between 0.0015-0.002. A large value of ***start\_saving\_epoch*** can better guarantee the convergence of the model though requires longer training time.
+
+Since the CV process may take long training time on a normal desktop computer, the function **cross\_validated\_clustering** enables early stop and later resumption. Users can set ***stop\_fold*** to be early stopping point and ***start_fold*** depending on previous stopping point.
+
+
+## Citation
+If you use this package for research, please cite the following papers:
+
+```bash
+@misc{yang2020smilegans,
+      title={Smile-GANs: Semi-supervised clustering via GANs for dissecting brain disease heterogeneity from medical images}, 
+      author={Zhijian Yang and Junhao Wen and Christos Davatzikos},
+      year={2020},
+      eprint={2006.15255},
+      archivePrefix={arXiv},
+      primaryClass={q-bio.QM}
+}
+```
+
+```bash
+@misc{yang2021BrainHeterogeneity,
+      title={Disentangling brain heterogeneity via semi-supervised deep-learning and MRI: dimensional representations of Alzheimer's Disease}, 
+      author={Zhijian Yang and Ilya M. Nasrallah and Haochang Shou and Junhao Wen and Jimit Doshi and Mohamad Habes and Guray Erus and Ahmed Abdulkadir and Susan M. Resnick and David Wolk and Christos Davatzikos},
+      year={2021},
+      eprint={2102.12582},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+```
 
 

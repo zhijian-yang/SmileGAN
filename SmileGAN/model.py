@@ -1,9 +1,19 @@
+import os
 import torch
 import torch.nn.functional as F
 from collections import OrderedDict
 from torch.autograd import Variable
 from itertools import chain as ichain
 from .networks import define_Linear_Mapping, define_Linear_Clustering, define_Linear_Discriminator
+
+__author__ = "Zhijian Yang"
+__copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"
+__credits__ = ["Zhijian Yang"]
+__license__ = "See LICENSE file"
+__version__ = "0.1.0"
+__maintainer__ = "Zhijian Yang"
+__email__ = "zhijianyang@outlook.com"
+__status__ = "Development"
 
 
 #####sample from discrete uniform random variable and construct SUB variable. 

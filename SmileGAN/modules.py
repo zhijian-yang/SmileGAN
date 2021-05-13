@@ -1,6 +1,15 @@
 import torch
 import torch.nn as nn
 
+__author__ = "Zhijian Yang"
+__copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"
+__credits__ = ["Zhijian Yang"]
+__license__ = "See LICENSE file"
+__version__ = "0.1.0"
+__maintainer__ = "Zhijian Yang"
+__email__ = "zhijianyang@outlook.com"
+__status__ = "Development"
+
 class TwoInputModule(nn.Module):
     def forward(self, input1, input2):
         raise NotImplementedError

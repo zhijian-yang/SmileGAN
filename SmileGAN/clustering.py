@@ -8,6 +8,15 @@ from .model import SmileGAN
 from .evaluate import eval_w_distances, cluster_output, label_change
 from .utils import Covariate_correction, Data_normalization
 
+__author__ = "Zhijian Yang"
+__copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"
+__credits__ = ["Zhijian Yang"]
+__license__ = "See LICENSE file"
+__version__ = "0.1.0"
+__maintainer__ = "Zhijian Yang"
+__email__ = "zhijianyang@outlook.com"
+__status__ = "Development"
+
 class dotdict(dict):
     """dot.notation access to dictionary attributes"""
     __getattr__ = dict.get
@@ -17,7 +26,7 @@ class dotdict(dict):
 class Smile_GAN_train():
     
     def __init__(self, ncluster, start_saving_epoch, max_epoch, WD_threshold, AQ_threshold, \
-        cluster_loss_threshold, load_model, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5, \
+        cluster_loss_threshold, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5, \
         beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 25, save_epoch_freq = 5, print_freq = 1000):
         self.opt=dotdict({})
         self.opt.ncluster = ncluster
@@ -26,7 +35,6 @@ class Smile_GAN_train():
         self.opt.WD_threshold = WD_threshold
         self.opt.AQ_threshold = AQ_threshold
         self.opt.cluster_loss_threshold = cluster_loss_threshold
-        self.opt.load_model = load_model
         self.opt.lam = lam
         self.opt.mu = mu
         self.opt.batchsize = batchSize
@@ -53,10 +61,11 @@ class Smile_GAN_train():
 
     def parse_data(self, data, covariate, random_seed, data_fraction):
         cn_data = data.loc[data['diagnosis'] == -1].drop(['participant_id','diagnosis'], axis=1).values
-        cn_cov = covariate.loc[covariate['diagnosis'] == -1].drop(['participant_id', 'diagnosis'], axis=1).values
         pt_data = data.loc[data['diagnosis'] == 1].drop(['participant_id','diagnosis'], axis=1).values
-        pt_cov = covariate.loc[covariate['diagnosis'] == 1].drop(['participant_id','diagnosis'], axis=1).values
-        cn_data,pt_data = Covariate_correction(cn_data,cn_cov,pt_data,pt_cov)
+        if covariate is not None:
+            cn_cov = covariate.loc[covariate['diagnosis'] == -1].drop(['participant_id', 'diagnosis'], axis=1).values
+            pt_cov = covariate.loc[covariate['diagnosis'] == 1].drop(['participant_id','diagnosis'], axis=1).values
+            cn_data,pt_data = Covariate_correction(cn_data,cn_cov,pt_data,pt_cov)
         normalized_cn_data, normalized_pt_data = Data_normalization(cn_data,pt_data)
         cn_train_dataset = CNIterator(normalized_cn_data,self.opt.random_seed, data_fraction, batch_size=self.opt.batchsize)
         pt_train_dataset = PTIterator(normalized_pt_data,self.opt.random_seed, data_fraction, batch_size=self.opt.batchsize)
@@ -74,12 +83,7 @@ class Smile_GAN_train():
   
         # create_model
         model = SmileGAN()
-        # whether load previous trained models
-        if self.opt.load_model:
-            print_log(result_f,'loading previous model')
-            model.load(os.path.join(save_dir,'latest'))
-        else:
-            model.create(self.opt)
+        model.create(self.opt)
 
         total_steps = 0
         print_start_time = time.time()
@@ -87,8 +91,8 @@ class Smile_GAN_train():
         aq_loss_cluster_list = [[0 for _ in range(4)] for _ in range(2)]                    ##### number of consecutive epochs with aq and cluster_loss < threshold
         savetime=0                                      ##### keep track of number of times that stopping criteria is satisfied if choosing not to stop model
         predicted_label_past=np.zeros(self.opt.n_val_data)   ##### keep track of assigned clustering membership in epochs
-    
-        pbar = tqdm(total = self.opt.max_epoch)
+        if not verbose:
+            pbar = tqdm(total = self.opt.max_epoch)
         for epoch in range(1, self.opt.max_epoch + 1):
             if not verbose:
                 pbar.update(1)

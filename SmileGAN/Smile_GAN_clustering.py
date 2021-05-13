@@ -78,8 +78,8 @@ def clustering_result(model_dirs, ncluster, concensus_type, validation_data):
 
 
 
-def single_model_clustering(data, covariate, ncluster, start_saving_epoch, max_epoch, output_dir, WD_threshold, AQ_threshold, \
-		cluster_loss_threshold, load_model, saved_model_name='converged_model', lam=9, mu=5, batchSize=25, lipschitz_k = 0.5, verbose = True, \
+def single_model_clustering(data, ncluster, start_saving_epoch, max_epoch, output_dir, WD_threshold, AQ_threshold, \
+		cluster_loss_threshold, covariate=None, saved_model_name='converged_model', lam=9, mu=5, batchSize=25, lipschitz_k = 0.5, verbose = False, \
 		beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5, save_epoch_freq = 5):
 	"""
 	one of Smile-GAN core function for clustering. Only one model will be trained. (not recommended since result may be not reproducible)
@@ -89,7 +89,7 @@ def single_model_clustering(data, covariate, ncluster, start_saving_epoch, max_e
 								 "i) the first column is the participant_id;"
 								 "iii) the second column should be the diagnosis;"
 								 "The following column should be the extracted features. e.g., the ROI features"
-		covariate: dataframe, dataframe file with all confounding covariates to be corrected. The dataframe contains
+		covariate: dataframe, not required; dataframe file with all confounding covariates to be corrected. The dataframe contains
 		the following headers: "
 								 "i) the first column is the participant_id;"
 								 "iii) the second column should be the diagnosis;"
@@ -121,7 +121,7 @@ def single_model_clustering(data, covariate, ncluster, start_saving_epoch, max_e
 	print('Start Smile-GAN for semi-supervised clustering')
 
 	Smile_GAN_model = Smile_GAN_train(ncluster, start_saving_epoch, max_epoch, WD_threshold, AQ_threshold, \
-		cluster_loss_threshold, load_model, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5,
+		cluster_loss_threshold, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5,
 		beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5,save_epoch_freq = 5)
 
 	__, __, __, validation_data = Smile_GAN_model.parse_data(data, covariate, 0, 1)
@@ -138,14 +138,14 @@ def single_model_clustering(data, covariate, ncluster, start_saving_epoch, max_e
 	for i in range(ncluster):
 		pt_data['p'+str(i+1)] = cluster_prob[:,i]
 	
-	pt_data.to_csv(os.path.join(output_dir,'clustering_result.csv'))
+	pt_data.to_csv(os.path.join(output_dir,'clustering_result.csv'), index = False)
 
 	return pt_data
 
 
-def cross_validated_clustering(data, covariate, ncluster, fold_number, fraction, start_saving_epoch, max_epoch, output_dir, WD_threshold, AQ_threshold, \
-		cluster_loss_threshold, load_model, concensus_type, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5, verbose = True, \
-		beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5, save_epoch_freq = 5, last_saved_fold = -1):
+def cross_validated_clustering(data, ncluster, fold_number, fraction, start_saving_epoch, max_epoch, output_dir, WD_threshold, AQ_threshold, \
+		cluster_loss_threshold, concensus_type, covariate=None, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5, verbose = False, \
+		beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5, save_epoch_freq = 5, start_fold = 0, stop_fold = None, check_outlier = True):
 	"""
 	cross_validated clustering function using Smile-GAN (recommended)
 	Args:
@@ -154,7 +154,7 @@ def cross_validated_clustering(data, covariate, ncluster, fold_number, fraction,
 								 "i) the first column is the participant_id;"
 								 "iii) the second column should be the diagnosis;"
 								 "The following column should be the extracted features. e.g., the ROI features"
-		covariate: dataframe, dataframe file with all confounding covariates to be corrected. The dataframe contains
+		covariate: dataframe, not required; dataframe file with all confounding covariates to be corrected. The dataframe contains
 		the following headers: "
 								 "i) the first column is the participant_id;"
 								 "iii) the second column should be the diagnosis;"
@@ -182,6 +182,11 @@ def cross_validated_clustering(data, covariate, ncluster, fold_number, fraction,
 		max_gnorm: float, maximum gradient norm for gradient clipping
 		eval_freq: int, the frequency at which the model is evaluated during training procedure
 		save_epoch_freq: int, the frequency at which the model is saved during training procedure
+		start_fold; int, indicate the last saved fold index,
+							  used for restart previous half-finished cross validation; set defaultly to be 0 indicating a new cv process
+		stop_fold: int, indicate the index of fold at which the cv early stop,
+							  used for stopping cv process eartly and resuming later; set defaultly to be None and cv will not stop till the end
+		check_outlier: bool, whether check outlier model (potential unsuccessful model) after cv process and retrain the fold
 
 	Returns: clustering outputs.
 
@@ -190,13 +195,16 @@ def cross_validated_clustering(data, covariate, ncluster, fold_number, fraction,
 	print('Start Smile-GAN for semi-supervised clustering')
 
 	Smile_GAN_model = Smile_GAN_train(ncluster, start_saving_epoch, max_epoch, WD_threshold, AQ_threshold, \
-		cluster_loss_threshold, load_model, lam=9, mu=5, batchSize=25, \
+		cluster_loss_threshold, lam=9, mu=5, batchSize=25, \
 		lipschitz_k= 0.5, beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5,save_epoch_freq = 5)
 
 	__, __, __, validation_data = Smile_GAN_model.parse_data(data, covariate, 0, 1)
 
 	saved_models = [os.path.join(output_dir, 'coverged_model_fold'+str(i)) for i in range(fold_number)]
-	for i in range(last_saved_fold+1, fold_number):
+	
+	if stop_fold == None:
+		stop_fold = fold_number
+	for i in range(start_fold, stop_fold):
 		print('****** Starting training of Fold '+str(i)+" ******")
 		saved_model_name = 'coverged_model_fold'+str(i)
 		converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
@@ -204,21 +212,22 @@ def cross_validated_clustering(data, covariate, ncluster, fold_number, fraction,
 			print("****** Model not converged at max interation, Start retraining ******")
 			converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, random_seed=i, data_fraction = fraction, verbose = verbose)
 
-	print('****** Start Checking outlier models ******')
-	outlier_models = model_filtering(saved_models, ncluster, validation_data)
-	if len(outlier_models) > 0:
-		print('Model ')
-		for model in outlier_models:
-			print(str(model),end=' ')
-		print('have low agreement with other models')
+	if check_outlier:
+		print('****** Start Checking outlier models ******')
+		outlier_models = model_filtering(saved_models, ncluster, validation_data)
+		if len(outlier_models) > 0:
+			print('Model ')
+			for model in outlier_models:
+				print(str(model),end=' ')
+			print('have low agreement with other models')
 	
-	for i in outlier_models:
-		print('****** Starting training of Fold '+str(i)+" ******")
-		saved_model_name = 'coverged_model_fold'+str(i)
-		converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
-		while not converge:
-			print("****** Model not converged at max interation, Start retraining ******")
+		for i in outlier_models:
+			print('****** Starting training of Fold '+str(i)+" ******")
+			saved_model_name = 'coverged_model_fold'+str(i)
 			converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
+			while not converge:
+				print("****** Model not converged at max interation, Start retraining ******")
+				converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 
 	cluster_label, cluster_prob = clustering_result(saved_models, ncluster, concensus_type, validation_data)
 	print(cluster_label)
@@ -230,7 +239,7 @@ def cross_validated_clustering(data, covariate, ncluster, fold_number, fraction,
 		for i in range(ncluster):
 			pt_data['p'+str(i+1)] = cluster_prob[:,i]
 	
-	pt_data.to_csv(os.path.join(output_dir,'clustering_result.csv'))
+	pt_data.to_csv(os.path.join(output_dir,'clustering_result.csv'), index = False)
 
 
 

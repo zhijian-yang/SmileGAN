@@ -12,4 +12,4 @@ single_model_clustering(train_data, covariate, 4, 0, 10000, '/Users/nyuyzj/Deskt
 
 cross_validated_clustering(train_data, covariate, 4, 5, 0.8, 100, 200, '/Users/nyuyzj/Desktop/Smile-GAN/Smile-GAN/training_result/', 0.15, 30, \
         0.0015, False, 'highest_matching_clustering', lam=9, mu=5, batchSize=25, verbose = False, \
-        beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 10, save_epoch_freq = 5, last_saved_fold = -1)
+        beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 10, save_epoch_freq = 5, start_fold = -1)
