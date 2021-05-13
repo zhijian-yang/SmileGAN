@@ -45,8 +45,8 @@ subject-1	    -1         325.4   603.4
 subject-2            1         260.5   580.3
 subject-3           -1         326.5   623.4
 subject-4            1         301.7   590.5
-subject-5            1		   293.1   595.1
-subject-6            1   	   287.8   608.9
+subject-5            1	       293.1   595.1
+subject-6            1         287.8   608.9
 ```
 Example for **covariate**
 
@@ -56,8 +56,8 @@ subject-1	    -1         57.3   0
 subject-2 	     1         43.5   1
 subject-3           -1         53.8   1
 subject-4            1         56.0   0
-subject-5            1		   60.0   1
-subject-6            1   	   62.5   0
+subject-5            1	       60.0   1
+subject-6            1         62.5   0
 ```
 
 ## Example
