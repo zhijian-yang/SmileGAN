@@ -41,8 +41,8 @@ Example for **data**:
 
 ```bash
 participant_id    diagnosis    ROI1    ROI2 ...
-subject-1		    -1         325.4   603.4
-subject-2 		     1         260.5   580.3
+subject-1	    -1         325.4   603.4
+subject-2            1         260.5   580.3
 subject-3           -1         326.5   623.4
 subject-4            1         301.7   590.5
 subject-5            1		   293.1   595.1
@@ -52,8 +52,8 @@ Example for **covariate**
 
 ```bash
 participant_id    diagnosis    age    sex ...
-subject-1		    -1         57.3   0
-subject-2 		     1         43.5   1
+subject-1	    -1         57.3   0
+subject-2 	     1         43.5   1
 subject-3           -1         53.8   1
 subject-4            1         56.0   0
 subject-5            1		   60.0   1
