@@ -216,7 +216,7 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 		print('****** Start Checking outlier models ******')
 		outlier_models = model_filtering(saved_models, ncluster, validation_data)
 		if len(outlier_models) > 0:
-			print('Model ')
+			print('Model', end=' ')
 			for model in outlier_models:
 				print(str(model),end=' ')
 			print('have low agreement with other models')
@@ -230,7 +230,6 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 				converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 
 	cluster_label, cluster_prob = clustering_result(saved_models, ncluster, concensus_type, validation_data)
-	print(cluster_label)
 	
 	pt_data = data.loc[data['diagnosis'] == 1][['participant_id','diagnosis']]
 	pt_data['cluster_label'] = cluster_label + 1
