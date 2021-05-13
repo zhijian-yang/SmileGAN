@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="Smile-GAN",
-    version="1.0.1",
+    name="SmileGAN",
+    version="1.0.5",
     author="zhijian.yang",
     author_email="zhijianyang@outlook.com",
     description="A python implementation of Smile-GAN for semisupervised clustering",

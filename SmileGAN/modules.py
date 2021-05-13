@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import numpy as np
 
 class TwoInputModule(nn.Module):
     def forward(self, input1, input2):

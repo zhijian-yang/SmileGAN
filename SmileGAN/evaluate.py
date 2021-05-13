@@ -1,8 +1,6 @@
 import numpy as np
-import math
-from scipy.stats import multivariate_normal
-from model import sample_z
 from scipy.linalg import sqrtm
+from .model import sample_z
 
 ## calulate wasserstein distance assuming independent ROIs
 def cal_w_distance(mean_1,mean_2,std_1,std_2):

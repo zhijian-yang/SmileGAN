@@ -1,9 +1,5 @@
 import torch
-import os.path
-import random
 import numpy as np
-import pandas as pd
-
 
 class PTIterator(object):
     def __init__(self, PT_data, random_seed, fraction, batch_size):

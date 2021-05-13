@@ -1,11 +1,6 @@
-import torch
 import torch.nn as nn
-from torch.nn import init
-import functools
-from torch.autograd import Variable
-import numpy as np
 import torch.nn.functional as F
-from modules import TwoInputSequential, Sub_Adder
+from .modules import TwoInputSequential, Sub_Adder
 
 ###############################################################################
 # Functions

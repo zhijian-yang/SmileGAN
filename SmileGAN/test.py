@@ -1,4 +1,4 @@
-from Smile_GAN_clustering import single_model_clustering, cross_validated_clustering
+from .Smile_GAN_clustering import single_model_clustering, cross_validated_clustering
 import pandas as pd
 
 train_data = pd.read_csv('train_roi.csv')

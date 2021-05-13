@@ -1,15 +1,12 @@
-import sys
 import os
 import time
-import torch
 import numpy as np
 from tqdm import tqdm
 from torch.autograd import Variable
-from data_loading import PTIterator, CNIterator, val_PT_construction, val_CN_construction
-from model import SmileGAN
-from evaluate import eval_w_distances, cluster_output, label_change
-from utils import Covariate_correction, Data_normalization
-
+from .data_loading import PTIterator, CNIterator, val_PT_construction, val_CN_construction
+from .model import SmileGAN
+from .evaluate import eval_w_distances, cluster_output, label_change
+from .utils import Covariate_correction, Data_normalization
 
 class dotdict(dict):
     """dot.notation access to dictionary attributes"""

@@ -1,15 +1,10 @@
 import sys
 import os
-import time
-import torch
 import numpy as np
-from torch.autograd import Variable
-from data_loading import PTIterator, CNIterator, val_PT_construction, val_CN_construction
-from model import SmileGAN
-from evaluate import eval_w_distances, cluster_output, label_change
-from utils import Covariate_correction, Data_normalization, highest_matching_clustering, consensus_clustering
-from clustering import Smile_GAN_train
 from sklearn import metrics
+from .model import SmileGAN
+from .utils import highest_matching_clustering, consensus_clustering
+from .clustering import Smile_GAN_train
 
 __author__ = "Zhijian Yang"
 __copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"

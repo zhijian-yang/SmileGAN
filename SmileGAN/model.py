@@ -1,16 +1,9 @@
-import os
-import functools
-import itertools
 import torch
 import torch.nn.functional as F
-import time
-import networks
-import numpy as np
 from collections import OrderedDict
 from torch.autograd import Variable
 from itertools import chain as ichain
-from tqdm import trange
-
+from .networks import define_Linear_Mapping, define_Linear_Clustering, define_Linear_Discriminator
 
 
 #####sample from discrete uniform random variable and construct SUB variable. 
@@ -78,9 +71,9 @@ class SmileGAN(object):
         self.opt = opt
 
         ## definition of all netwotks
-        self.netMapping = networks.define_Linear_Mapping(self.opt.nROI,self.opt.ncluster)
-        self.netClustering=networks.define_Linear_Clustering(self.opt.nROI,self.opt.ncluster)
-        self.netDiscriminator = networks.define_Linear_Discriminator(self.opt.nROI,self.opt.ncluster)
+        self.netMapping = define_Linear_Mapping(self.opt.nROI,self.opt.ncluster)
+        self.netClustering = define_Linear_Clustering(self.opt.nROI,self.opt.ncluster)
+        self.netDiscriminator = define_Linear_Discriminator(self.opt.nROI,self.opt.ncluster)
 
         ## definition of all optimizers
         self.optimizer_M = torch.optim.Adam(ichain(self.netMapping.parameters(),self.netClustering.parameters()),
@@ -167,9 +160,9 @@ class SmileGAN(object):
         checkpoint = torch.load(chk_path)
         self.load_opt(checkpoint)
         ##### definition of all netwotks
-        self.netMapping = networks.define_Linear_Mapping(self.opt.nROI,self.opt.ncluster)
-        self.netClustering=networks.define_Linear_Clustering(self.opt.nROI,self.opt.ncluster)
-        self.netDiscriminator = networks.define_Linear_Discriminator(self.opt.nROI,self.opt.ncluster)
+        self.netMapping = define_Linear_Mapping(self.opt.nROI,self.opt.ncluster)
+        self.netClustering = define_Linear_Clustering(self.opt.nROI,self.opt.ncluster)
+        self.netDiscriminator = define_Linear_Discriminator(self.opt.nROI,self.opt.ncluster)
 
         ##### definition of all optimizers
         self.optimizer_M = torch.optim.Adam(ichain(self.netMapping.parameters(),self.netClustering.parameters()),
