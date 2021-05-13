@@ -155,7 +155,3 @@ class Smile_GAN_train():
         result_f.close()
         pbar.close()
         return False
-
-
-if __name__ == "__main__":
-    train_model()
