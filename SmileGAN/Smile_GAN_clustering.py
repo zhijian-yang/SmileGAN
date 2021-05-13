@@ -220,6 +220,8 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 			for model in outlier_models:
 				print(str(model),end=' ')
 			print('have low agreement with other models')
+		else:
+			print('****** There are no outlier models. ******')
 	
 		for i in outlier_models:
 			print('****** Starting training of Fold '+str(i)+" ******")
@@ -239,7 +241,7 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 			pt_data['p'+str(i+1)] = cluster_prob[:,i]
 	
 	pt_data.to_csv(os.path.join(output_dir,'clustering_result.csv'), index = False)
-
+	print('****** Smile-GAN clustering finished ******')
 
 
 if __name__ == "__main__":
