@@ -87,12 +87,15 @@ def clustering_result(model_dirs, ncluster, concensus_type, data, covariate=None
 		all_prediction_labels.append(np.argmax(model.predict_cluster(validation_data), axis=1))
 		all_prediction_probabilities.append(model.predict_cluster(validation_data))
 
-	mean_ari, std_ari = calculate_ari(all_prediction_labels)
-	print("Results have Adjuested_random_index (ARI) = %.2f+- %.2f" %(mean_ari, std_ari))
-	
-	if mean_ari<0.3 and concensus_type == 'highest_matching_clustering':
-		print('mean ARI < 0.3, concensus_clustering is recommended')
-	if concensus_type == 'highest_matching_clustering':
+	if len(model_dirs) > 1:
+		mean_ari, std_ari = calculate_ari(all_prediction_labels)
+		print("Results have Adjuested_random_index (ARI) = %.2f+- %.2f" %(mean_ari, std_ari))
+		if mean_ari<0.3 and concensus_type == 'highest_matching_clustering':
+			print('mean ARI < 0.3, concensus_clustering is recommended')
+			
+	if len(all_prediction_labels) == 1:
+		return np.array(all_prediction_labels[0]), np.array(all_prediction_probabilities[0])
+	elif concensus_type == 'highest_matching_clustering':
 		return highest_matching_clustering(all_prediction_labels, all_prediction_probabilities, ncluster)	
 	elif concensus_type == 'consensus_clustering':
 		return consensus_clustering(all_prediction_labels, ncluster), None
