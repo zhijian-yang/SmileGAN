@@ -67,7 +67,7 @@ We offer a toy dataset in the folder of SmileGAN/dataset.
 
 ```bash
 import pandas as pd
-from SmileGAN.Smile_GAN_clustering import single_model_clustering,cross_validated_clustering
+from SmileGAN.Smile_GAN_clustering import single_model_clustering, cross_validated_clustering, clustering_result
 
 train_data = pd.read_csv('train_roi.csv')
 covariate = pd.read_csv('train_cov.csv')
@@ -80,22 +80,34 @@ max_epoch = 10000
 ## three parameters for stopping threhold
 WD = 0.11
 AQ = 20
-clustering_error = 0.0015
+cluster_loss = 0.0015
+```
 
-## clustering without cross validation (train model only once, not recommended)
+When using the package, ***WD***, ***AQ***, ***cluster\_loss*** need to be chosen empirically. WD is recommended to be a value between 0.1-0.15, AQ is recommended to be 1/20 of patient numbers and cluster\_loss is recommended to be a value between 0.0015-0.002. A large value of ***start\_saving\_epoch*** can better guarantee the convergence of the model though requires longer training time.
+
+
+```bash
 single_model_clustering(train_data, ncluster, start_saving_epoch, max_epoch,\
-					    output_dir, WD, AQ, clustering_error, covariate=covariate)
-					    
-## clustering with cross validation (recommended)
+					    output_dir, WD, AQ, cluster_loss, covariate=covariate)
+```
+**single\_model\_clustering** performs clustering without cross validation. Since only one model is trained with this function, the model may be not representative or reproducible. Therefore, this function is ***not recommended***. The function automatically saves an csv file with clustering results and returns the same dataframe.
+
+
+
+```bash				    
 fold_number = 10  # number of folds the leave-out cv runs
 data_fraction = 0.8 # fraction of data used in each fold
 cross_validated_clustering(train_data, ncluster, start_saving_epoch, max_epoch,\
-					    output_dir, WD, AQ, clustering_error, covariate=covariate)
+					    output_dir, WD, AQ, cluster_loss, covariate=covariate)
 ```
 
-When using the package, ***WD***, ***AQ***, ***clustering\_error*** need to be chosen empirically. WD is recommended to be a value between 0.1-0.15, AQ is recommended to be 1/20 of patient numbers and clustering_error is recommended to be a value between 0.0015-0.002. A large value of ***start\_saving\_epoch*** can better guarantee the convergence of the model though requires longer training time.
+**cross\_validated\_clustering** performs clustering with leave-out cross validation. It is the ***recommended*** function for clustering. Since the CV process may take long training time on a normal desktop computer, the function enables early stop and later resumption. Users can set ***stop\_fold*** to be early stopping point and ***start\_fold*** depending on previous stopping point. The function automatically saves an csv file with clustering results and returns the same dataframe.
 
-Since the CV process may take long training time on a normal desktop computer, the function **cross\_validated\_clustering** enables early stop and later resumption. Users can set ***stop\_fold*** to be early stopping point and ***start_fold*** depending on previous stopping point.
+```					    
+model_dirs = ['PATH_TO_CHECKPOINT1','PATH_TO_CHECKPOINT2',...] #list of paths to previously saved checkpoints (with name 'coverged_model_foldk' after cv process)
+cluster_label, cluster_probabilities = clustering_result(model_dirs, ncluster, 'highest_matching_clustering, train_data, covariate)
+```
+**clustering\_result** is a functions used for clustering patient data using previously saved models. Input data and covariate (optional) should be panda dataframe with same format shown before. Exactly same CN data used for training should be included while PT data can be any samples inside or outside of the training set. ***The function returns cluster labels of PT data following the order of PT in the provided dataframe.*** If ***consensus\_type*** is chosen to be ***'highest\_matching\_clustering***, probabilities of each cluster will also be returned. 
 
 
 ## Citation

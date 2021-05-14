@@ -6,6 +6,7 @@ from sklearn.preprocessing import minmax_scale
 from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
 from sklearn import metrics
+from .data_loading import PTIterator, CNIterator, val_PT_construction, val_CN_construction
 
 __author__ = "Zhijian Yang"
 __copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"
@@ -113,6 +114,32 @@ def Data_normalization(cn_data,pt_data):
     normalized_cn_data = 1+(cn_data-cn_mean)/(10*cn_std)
     normalized_pt_data = 1+(pt_data-cn_mean)/(10*cn_std)
     return normalized_cn_data, normalized_pt_data
+
+def parse_train_data(data, covariate, random_seed, data_fraction, batch_size):
+    cn_data = data.loc[data['diagnosis'] == -1].drop(['participant_id','diagnosis'], axis=1).values
+    pt_data = data.loc[data['diagnosis'] == 1].drop(['participant_id','diagnosis'], axis=1).values
+    if covariate is not None:
+        cn_cov = covariate.loc[covariate['diagnosis'] == -1].drop(['participant_id', 'diagnosis'], axis=1).values
+        pt_cov = covariate.loc[covariate['diagnosis'] == 1].drop(['participant_id','diagnosis'], axis=1).values
+        cn_data,pt_data = Covariate_correction(cn_data,cn_cov,pt_data,pt_cov)
+    normalized_cn_data, normalized_pt_data = Data_normalization(cn_data,pt_data)
+    cn_train_dataset = CNIterator(normalized_cn_data, random_seed, data_fraction, batch_size)
+    pt_train_dataset = PTIterator(normalized_pt_data, random_seed, data_fraction, batch_size)
+    return cn_train_dataset, pt_train_dataset
+
+
+def parse_validation_data(data, covariate):
+    cn_data = data.loc[data['diagnosis'] == -1].drop(['participant_id','diagnosis'], axis=1).values
+    pt_data = data.loc[data['diagnosis'] == 1].drop(['participant_id','diagnosis'], axis=1).values
+    if covariate is not None:
+        cn_cov = covariate.loc[covariate['diagnosis'] == -1].drop(['participant_id', 'diagnosis'], axis=1).values
+        pt_cov = covariate.loc[covariate['diagnosis'] == 1].drop(['participant_id','diagnosis'], axis=1).values
+        cn_data,pt_data = Covariate_correction(cn_data,cn_cov,pt_data,pt_cov)
+    normalized_cn_data, normalized_pt_data = Data_normalization(cn_data,pt_data)
+    cn_eval_dataset = val_CN_construction(normalized_cn_data).load()
+    pt_eval_dataset = val_PT_construction(normalized_pt_data).load()
+    return cn_eval_dataset, pt_eval_dataset
+
 
 
 def check_symmetric(a, rtol=1e-05, atol=1e-08):

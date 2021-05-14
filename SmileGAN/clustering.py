@@ -3,10 +3,9 @@ import time
 import numpy as np
 from tqdm import tqdm
 from torch.autograd import Variable
-from .data_loading import PTIterator, CNIterator, val_PT_construction, val_CN_construction
 from .model import SmileGAN
 from .evaluate import eval_w_distances, cluster_output, label_change
-from .utils import Covariate_correction, Data_normalization
+from .utils import Covariate_correction, Data_normalization, parse_train_data, parse_validation_data
 
 __author__ = "Zhijian Yang"
 __copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"
@@ -60,19 +59,10 @@ class Smile_GAN_train():
         return message
 
     def parse_data(self, data, covariate, random_seed, data_fraction):
-        cn_data = data.loc[data['diagnosis'] == -1].drop(['participant_id','diagnosis'], axis=1).values
-        pt_data = data.loc[data['diagnosis'] == 1].drop(['participant_id','diagnosis'], axis=1).values
-        if covariate is not None:
-            cn_cov = covariate.loc[covariate['diagnosis'] == -1].drop(['participant_id', 'diagnosis'], axis=1).values
-            pt_cov = covariate.loc[covariate['diagnosis'] == 1].drop(['participant_id','diagnosis'], axis=1).values
-            cn_data,pt_data = Covariate_correction(cn_data,cn_cov,pt_data,pt_cov)
-        normalized_cn_data, normalized_pt_data = Data_normalization(cn_data,pt_data)
-        cn_train_dataset = CNIterator(normalized_cn_data,self.opt.random_seed, data_fraction, batch_size=self.opt.batchsize)
-        pt_train_dataset = PTIterator(normalized_pt_data,self.opt.random_seed, data_fraction, batch_size=self.opt.batchsize)
-        cn_eval_dataset = val_CN_construction(normalized_cn_data).load()
-        pt_eval_dataset = val_PT_construction(normalized_pt_data).load()
-        self.opt.nROI = normalized_pt_data.shape[1]
-        self.opt.n_val_data = normalized_pt_data.shape[0]
+        cn_train_dataset, pt_train_dataset = parse_train_data(data, covariate, random_seed, data_fraction, self.opt.batchsize)
+        cn_eval_dataset, pt_eval_dataset = parse_validation_data(data, covariate)
+        self.opt.nROI = pt_eval_dataset.shape[1]
+        self.opt.n_val_data = pt_eval_dataset.shape[0]
         return cn_train_dataset, pt_train_dataset, cn_eval_dataset, pt_eval_dataset
 
 
@@ -133,7 +123,7 @@ class Smile_GAN_train():
 
             
                 t = time.time() - t
-                res_str_list = ["[%d], Max_W_Distance: %.4f, TIME: %.4f" % (epoch,max_distance, t)]
+                res_str_list = ["[%d], Mean_W_Distance: %.4f, TIME: %.4f" % (epoch,max_distance, t)]
                 res_str_list.extend(['W_Distances: %s' % [round(ele, 4) for ele in w_distances],'Subtype_Quantity: %s' %predicted_class])
 
                 if len(w_distances)==model.opt.ncluster:

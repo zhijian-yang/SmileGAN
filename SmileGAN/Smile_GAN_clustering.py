@@ -3,7 +3,7 @@ import os
 import numpy as np
 from sklearn import metrics
 from .model import SmileGAN
-from .utils import highest_matching_clustering, consensus_clustering
+from .utils import highest_matching_clustering, consensus_clustering, parse_validation_data
 from .clustering import Smile_GAN_train
 
 __author__ = "Zhijian Yang"
@@ -16,18 +16,23 @@ __email__ = "zhijianyang@outlook.com"
 __status__ = "Development"
 
 
-def model_filtering(model_dirs, ncluster, validation_data):
+def model_filtering(model_dirs, ncluster, data, covariate=None):
 	"""
 	Function used for filter out models who have significantly different clustering results with others.
 	This function deal with rare failing cases of Smile-GAN
 	Args:
 		model_dirs: list, list of dirs of all saved models
 		ncluster: int, number of defined clusters
-		validation_data, torch.tensor, all covariate corrected and normalized pt data used for validation
+		data, data_frame, dataframe with same format as training data. CN data must be exactly same as CN data in training dataframe while 
+						  PT data can be any samples in or out of the training set.
+		covariate, data_frame, dataframe with same format as training covariate. CN data must be exactly same as CN data in training covariate while 
+						  PT data can be any samples in or out of the training set.
 
 	Returns: list of index indicating outlier models
 
 	"""
+	_, validation_data = parse_validation_data(data, covariate)
+	
 	all_prediction_labels = []
 	for models in model_dirs:
 		model = SmileGAN()
@@ -48,20 +53,32 @@ def model_filtering(model_dirs, ncluster, validation_data):
 
 	return filtered_models
 
+def calculate_ari(prediction_labels):
+	model_aris = []
+	for i in range(len(prediction_labels)):
+		for j in range(i+1,len(prediction_labels)):
+			model_aris.append(metrics.adjusted_rand_score(prediction_labels[i], prediction_labels[j]))
+	return np.mean(model_aris), np.std(model_aris)
 
-def clustering_result(model_dirs, ncluster, concensus_type, validation_data):
+
+
+def clustering_result(model_dirs, ncluster, concensus_type, data, covariate=None):
 	"""
-	Function used for derive final clustering results from several saved models
+	Function used for derive clustering results from several saved models
 	Args:
 		model_dirs: list, list of dirs of all saved models
 		ncluster: int, number of defined clusters
 		concensus_type: string, the method used for deriving final clustering results with all models derived through CV
 								choose between 'highest_matching_clustering' and 'consensus_clustering'
-		validation_data, torch.tensor, all covariate corrected and normalized pt data used for validation
-
+		data, data_frame, dataframe with same format as training data. CN data must be exactly same as CN data in training dataframe while 
+						  PT data can be any samples in or out of the training set.
+		covariate, data_frame, dataframe with same format as training covariate. CN data must be exactly same as CN data in training covariate while 
+						  PT data can be any samples in or out of the training set.
 	Returns: clustering outputs.
 
 	"""
+	_, validation_data = parse_validation_data(data, covariate)
+
 	all_prediction_labels = []
 	all_prediction_probabilities = []
 	for models in model_dirs:
@@ -69,6 +86,12 @@ def clustering_result(model_dirs, ncluster, concensus_type, validation_data):
 		model.load(models)
 		all_prediction_labels.append(np.argmax(model.predict_cluster(validation_data), axis=1))
 		all_prediction_probabilities.append(model.predict_cluster(validation_data))
+
+	mean_ari, std_ari = calculate_ari(all_prediction_labels)
+	print("Results have Adjuested_random_index (ARI) = %.2f+- %.2f" %(mean_ari, std_ari))
+	
+	if mean_ari<0.3 and concensus_type == 'highest_matching_clustering':
+		print('mean ARI < 0.3, concensus_clustering is recommended')
 	if concensus_type == 'highest_matching_clustering':
 		return highest_matching_clustering(all_prediction_labels, all_prediction_probabilities, ncluster)	
 	elif concensus_type == 'consensus_clustering':
@@ -123,15 +146,13 @@ def single_model_clustering(data, ncluster, start_saving_epoch, max_epoch, outpu
 	Smile_GAN_model = Smile_GAN_train(ncluster, start_saving_epoch, max_epoch, WD_threshold, AQ_threshold, \
 		cluster_loss_threshold, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5,
 		beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5,save_epoch_freq = 5)
-
-	__, __, __, validation_data = Smile_GAN_model.parse_data(data, covariate, 0, 1)
 	
 	converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 	while not converge:
 		print("****** Model not converged at max interation, Start retraining ******")
 		converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 
-	cluster_label, cluster_prob = clustering_result([os.path.join(output_dir,saved_model_name)], ncluster, 'highest_matching_clustering', validation_data)
+	cluster_label, cluster_prob = clustering_result([os.path.join(output_dir,saved_model_name)], ncluster, 'highest_matching_clustering', data, covariate)
 	pt_data = data.loc[data['diagnosis'] == 1][['participant_id','diagnosis']]
 	pt_data['cluster_label'] = cluster_label + 1
 
@@ -198,8 +219,6 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 		cluster_loss_threshold, lam=9, mu=5, batchSize=25, \
 		lipschitz_k= 0.5, beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5,save_epoch_freq = 5)
 
-	__, __, __, validation_data = Smile_GAN_model.parse_data(data, covariate, 0, 1)
-
 	saved_models = [os.path.join(output_dir, 'coverged_model_fold'+str(i)) for i in range(fold_number)]
 	
 	if stop_fold == None:
@@ -214,14 +233,14 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 
 	if check_outlier:
 		print('****** Start Checking outlier models ******')
-		outlier_models = model_filtering(saved_models, ncluster, validation_data)
+		outlier_models = model_filtering(saved_models, ncluster, data, covariate)
 		if len(outlier_models) > 0:
 			print('Model', end=' ')
 			for model in outlier_models:
 				print(str(model),end=' ')
 			print('have low agreement with other models')
 		else:
-			print('****** There are no outlier models. ******')
+			print('****** There are no outlier models ******')
 	
 		for i in outlier_models:
 			print('****** Starting training of Fold '+str(i)+" ******")
@@ -231,7 +250,7 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 				print("****** Model not converged at max interation, Start retraining ******")
 				converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 
-	cluster_label, cluster_prob = clustering_result(saved_models, ncluster, concensus_type, validation_data)
+	cluster_label, cluster_prob = clustering_result(saved_models, ncluster, concensus_type, data, covariate)
 	
 	pt_data = data.loc[data['diagnosis'] == 1][['participant_id','diagnosis']]
 	pt_data['cluster_label'] = cluster_label + 1
