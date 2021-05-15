@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="SmileGAN",
-    version="1.0.18",
+    version="0.0.2",
     author="zhijian.yang",
     author_email="zhijianyang@outlook.com",
     description="A python implementation of Smile-GAN for semisupervised clustering",
@@ -13,11 +13,6 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/nyuyzj/Smile-GAN",
     packages=setuptools.find_packages(),
-    entry_points={
-        'console_scripts': [
-            'pyhydra = pyhydra.main:main',
-        ],
-    },
     classifiers=(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
