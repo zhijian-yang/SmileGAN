@@ -147,8 +147,8 @@ def single_model_clustering(data, ncluster, start_saving_epoch, max_epoch, outpu
 	print('Start Smile-GAN for semi-supervised clustering')
 
 	Smile_GAN_model = Smile_GAN_train(ncluster, start_saving_epoch, max_epoch, WD_threshold, AQ_threshold, \
-		cluster_loss_threshold, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5,
-		beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5,save_epoch_freq = 5)
+		cluster_loss_threshold, lam=lam, mu=mu, batchSize=batchSize, lipschitz_k = lipschitz_k,
+		beta1 = beta1, lr = lr, max_gnorm = max_gnorm, eval_freq = eval_freq, save_epoch_freq = save_epoch_freq)
 	
 	converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 	while not converge:
@@ -219,8 +219,8 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 	print('Start Smile-GAN for semi-supervised clustering')
 
 	Smile_GAN_model = Smile_GAN_train(ncluster, start_saving_epoch, max_epoch, WD_threshold, AQ_threshold, \
-		cluster_loss_threshold, lam=9, mu=5, batchSize=25, \
-		lipschitz_k= 0.5, beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5,save_epoch_freq = 5)
+		cluster_loss_threshold, lam=lam, mu=mu, batchSize=batchSize, \
+		lipschitz_k = lipschitz_k, beta1 = beta1, lr = lr, max_gnorm = max_gnorm, eval_freq = eval_freq, save_epoch_freq = save_epoch_freq)
 
 	saved_models = [os.path.join(output_dir, 'coverged_model_fold'+str(i)) for i in range(fold_number)]
 	
