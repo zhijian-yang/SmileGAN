@@ -264,7 +264,3 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 	
 	pt_data.to_csv(os.path.join(output_dir,'clustering_result.csv'), index = False)
 	print('****** Smile-GAN clustering finished ******')
-
-
-if __name__ == "__main__":
-	train_model()
