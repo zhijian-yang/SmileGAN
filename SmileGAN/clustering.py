@@ -4,7 +4,7 @@ import numpy as np
 from tqdm import tqdm
 from torch.autograd import Variable
 from .model import SmileGAN
-from .evaluate import eval_w_distances, cluster_output, label_change
+from .evaluate import eval_w_distances, label_change
 from .utils import Covariate_correction, Data_normalization, parse_train_data, parse_validation_data
 
 __author__ = "Zhijian Yang"
@@ -67,7 +67,7 @@ class Smile_GAN_train():
 
 
     def train(self, model_name, data, covariate, save_dir, random_seed=0, data_fraction=1, verbose=True, independent_ROI = True):
-        if not verbose: result_f = open("%s/results.txt" % save_dir, 'w')
+        if verbose: result_f = open("%s/results.txt" % save_dir, 'w')
 
         cn_train_dataset, pt_train_dataset, eval_X, eval_Y = self.parse_data(data, covariate, random_seed, data_fraction)
   
@@ -142,6 +142,6 @@ class Smile_GAN_train():
                 res_str_list += ["*** Max iteration reached and criterion not satisfied ***"]
                 if verbose:  
                     self.print_log(result_f, res_str)
-        result_f.close()
-        pbar.close()
+        if verbose: result_f.close()
+        if not verbose: pbar.close()
         return False

@@ -61,24 +61,6 @@ def eval_w_distances(real_X,real_Y,model,independent):
     max_distance, w_distances=cal_validate_distance(model,mean,std,real_Y,independent)
     return max_distance, w_distances
 
-def multiple_cluster_accuracy(prediction):
-    output=[]
-    for sub in prediction:
-        sum=0
-        accuracy_list=[0 for _ in range(len(prediction))]
-        for index in range(len(prediction)):
-            for i in range(sub.shape[0]):
-                if (sub[i].tolist().index(max(sub[i].tolist()))==index): sum+=1
-            accuracy_list[index]=sum*1.0/sub.shape[0]
-            sum=0
-        output.append(accuracy_list)
-    return output
-
-## return clustering distribution of subjects in three predefined subtypes
-def cluster_output(model,test_Y,opt):
-    prediction=model.predict_cluster(test_Y)
-    return multiple_cluster_accuracy([prediction[0:200],prediction[200:400],prediction[400:]])
-
 ## return clustering memberships of valY datapoints and quantity of subjects assigned to each subtype
 def label_change(model,test_Y,opt):
     predicted_label=[]
