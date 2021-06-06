@@ -134,7 +134,7 @@ class Smile_GAN_train():
                         pbar.close()
                         res_str_list += ["*** Stopping Criterion Satisfied ***"]
                         res_str = "\n".join(["-"*60] + res_str_list + ["-"*60])
-                        self.print_log(result_f, res_str)
+                        if verbose: self.print_log(result_f, res_str)
                         result_f.close()
                         return True
 
