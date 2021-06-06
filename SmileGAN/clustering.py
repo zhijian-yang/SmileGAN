@@ -131,11 +131,12 @@ class Smile_GAN_train():
                      and max(aq_loss_cluster_list[1])<self.opt.cluster_loss_threshold and epoch > self.opt.start_saving_epoch:
                         savetime+=1
                         model.save(save_dir, model_name)
-                        pbar.close()
+                        if not verbose: pbar.close()
                         res_str_list += ["*** Stopping Criterion Satisfied ***"]
                         res_str = "\n".join(["-"*60] + res_str_list + ["-"*60])
-                        if verbose: self.print_log(result_f, res_str)
-                        result_f.close()
+                        if verbose: 
+                            self.print_log(result_f, res_str)
+                            result_f.close()
                         return True
 
                 res_str = "\n".join(["-"*60] + res_str_list + ["-"*60])
