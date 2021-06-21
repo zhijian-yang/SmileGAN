@@ -48,7 +48,7 @@ def model_filtering(model_dirs, ncluster, data, covariate=None):
 	median_aris = np.median(model_aris, axis=1)
 	for j in range(median_aris.shape[0]):
 		rest_aris = np.delete(median_aris,j)
-		if (median_aris[j]-np.mean(rest_aris))/np.std(rest_aris)<-3:
+		if (median_aris[j]-np.mean(rest_aris))/np.std(rest_aris)<-2:
 			filtered_models.append(j)
 
 	return filtered_models
@@ -94,11 +94,12 @@ def clustering_result(model_dirs, ncluster, concensus_type, data, covariate=None
 			print('mean ARI < 0.3, concensus_clustering is recommended')
 			
 	if len(all_prediction_labels) == 1:
-		return np.array(all_prediction_labels[0]), np.array(all_prediction_probabilities[0])
+		return np.array(all_prediction_labels[0]), np.array(all_prediction_probabilities[0]), 1, 0
 	elif concensus_type == 'highest_matching_clustering':
-		return highest_matching_clustering(all_prediction_labels, all_prediction_probabilities, ncluster)	
+		cluster_label, cluster_prob = highest_matching_clustering(all_prediction_labels, all_prediction_probabilities, ncluster)
+		return cluster_label, cluster_prob, mean_ari, std_ari
 	elif concensus_type == 'consensus_clustering':
-		return consensus_clustering(all_prediction_labels, ncluster), None
+		return consensus_clustering(all_prediction_labels, ncluster), None, mean_ari, std_ari
 	else:
 		raise Exception("Please choose between 'highest_matching_clustering' and 'consensus_clustering'")
 
@@ -155,7 +156,7 @@ def single_model_clustering(data, ncluster, start_saving_epoch, max_epoch, outpu
 		print("****** Model not converged at max interation, Start retraining ******")
 		converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 
-	cluster_label, cluster_prob = clustering_result([os.path.join(output_dir,saved_model_name)], ncluster, 'highest_matching_clustering', data, covariate)
+	cluster_label, cluster_prob, mean_ari, std_ari = clustering_result([os.path.join(output_dir,saved_model_name)], ncluster, 'highest_matching_clustering', data, covariate)
 	pt_data = data.loc[data['diagnosis'] == 1][['participant_id','diagnosis']]
 	pt_data['cluster_label'] = cluster_label + 1
 
@@ -253,7 +254,7 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 				print("****** Model not converged at max interation, Start retraining ******")
 				converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 
-	cluster_label, cluster_prob = clustering_result(saved_models, ncluster, concensus_type, data, covariate)
+	cluster_label, cluster_prob, mean_ari, std_ari = clustering_result(saved_models, ncluster, concensus_type, data, covariate)
 	
 	pt_data = data.loc[data['diagnosis'] == 1][['participant_id','diagnosis']]
 	pt_data['cluster_label'] = cluster_label + 1
@@ -261,6 +262,8 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 	if concensus_type == "highest_matching_clustering":
 		for i in range(ncluster):
 			pt_data['p'+str(i+1)] = cluster_prob[:,i]
+
+	pt_data["ARI = %.2f+- %.2f" %(mean_ari, std_ari)] = ''
 	
 	pt_data.to_csv(os.path.join(output_dir,'clustering_result.csv'), index = False)
 	print('****** Smile-GAN clustering finished ******')
