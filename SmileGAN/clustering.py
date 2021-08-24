@@ -79,6 +79,8 @@ class Smile_GAN_train():
         print_start_time = time.time()
         max_distance_list = [0,0]                    ##### number of consecutive epochs with max_wd < threshold
         aq_loss_cluster_list = [[0 for _ in range(4)] for _ in range(2)]                    ##### number of consecutive epochs with aq and cluster_loss < threshold
+        early_retrain_list = [0 for _ in range(10)]
+
         savetime=0                                      ##### keep track of number of times that stopping criteria is satisfied if choosing not to stop model
         predicted_label_past=np.zeros(self.opt.n_val_data)   ##### keep track of assigned clustering membership in epochs
         if not verbose:
@@ -118,15 +120,17 @@ class Smile_GAN_train():
                 max_distance_list.pop(0)
                 aq_loss_cluster_list[0].append(total_label_change)
                 aq_loss_cluster_list[1].append(losses['loss_cluster'])
+                early_retrain_list.append(losses['loss_cluster'])
                 for _ in range(2):
                     aq_loss_cluster_list[_].pop(0) 
+                early_retrain_list.pop(0)
 
             
                 t = time.time() - t
                 res_str_list = ["[%d], Mean_W_Distance: %.4f, TIME: %.4f" % (epoch,max_distance, t)]
                 res_str_list.extend(['W_Distances: %s' % [round(ele, 4) for ele in w_distances],'Subtype_Quantity: %s' %predicted_class])
 
-                if min(aq_loss_cluster_list[1])>0.4:
+                if min(early_retrain_list)>0.4:
                     return False
 
                 if len(w_distances)==model.opt.ncluster:

@@ -153,7 +153,7 @@ def single_model_clustering(data, ncluster, start_saving_epoch, max_epoch, outpu
 	
 	converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 	while not converge:
-		print("****** Model not converged at max interation, Start retraining ******")
+		print("****** Model not converging or not converged at max interation, Start retraining ******")
 		converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 
 	cluster_label, cluster_prob, mean_ari, std_ari = clustering_result([os.path.join(output_dir,saved_model_name)], ncluster, 'highest_matching_clustering', data, covariate)
@@ -232,7 +232,7 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 		saved_model_name = 'coverged_model_fold'+str(i)
 		converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 		while not converge:
-			print("****** Model not converged at max interation, Start retraining ******")
+			print("****** Model not converging or not converged at max interation, Start retraining ******")
 			converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, random_seed=i, data_fraction = fraction, verbose = verbose)
 
 	if check_outlier:
