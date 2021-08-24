@@ -62,13 +62,13 @@ def calculate_ari(prediction_labels):
 
 
 
-def clustering_result(model_dirs, ncluster, concensus_type, data, covariate=None):
+def clustering_result(model_dirs, ncluster, consensus_type, data, covariate=None):
 	"""
 	Function used for derive clustering results from several saved models
 	Args:
 		model_dirs: list, list of dirs of all saved models
 		ncluster: int, number of defined clusters
-		concensus_type: string, the method used for deriving final clustering results with all models derived through CV
+		consensus_type: string, the method used for deriving final clustering results with all models derived through CV
 								choose between 'highest_matching_clustering' and 'consensus_clustering'
 		data, data_frame, dataframe with same format as training data. CN data must be exactly same as CN data in training dataframe while 
 						  PT data can be any samples in or out of the training set.
@@ -90,15 +90,15 @@ def clustering_result(model_dirs, ncluster, concensus_type, data, covariate=None
 	if len(model_dirs) > 1:
 		mean_ari, std_ari = calculate_ari(all_prediction_labels)
 		print("Results have Adjuested_random_index (ARI) = %.2f+- %.2f" %(mean_ari, std_ari))
-		if mean_ari<0.3 and concensus_type == 'highest_matching_clustering':
-			print('mean ARI < 0.3, concensus_clustering is recommended')
+		if mean_ari<0.3 and consensus_type == 'highest_matching_clustering':
+			print('mean ARI < 0.3, consensus_clustering is recommended')
 			
 	if len(all_prediction_labels) == 1:
 		return np.array(all_prediction_labels[0]), np.array(all_prediction_probabilities[0]), 1, 0
-	elif concensus_type == 'highest_matching_clustering':
+	elif consensus_type == 'highest_matching_clustering':
 		cluster_label, cluster_prob = highest_matching_clustering(all_prediction_labels, all_prediction_probabilities, ncluster)
 		return cluster_label, cluster_prob, mean_ari, std_ari
-	elif concensus_type == 'consensus_clustering':
+	elif consensus_type == 'consensus_clustering':
 		return consensus_clustering(all_prediction_labels, ncluster), None, mean_ari, std_ari
 	else:
 		raise Exception("Please choose between 'highest_matching_clustering' and 'consensus_clustering'")
@@ -169,7 +169,7 @@ def single_model_clustering(data, ncluster, start_saving_epoch, max_epoch, outpu
 
 
 def cross_validated_clustering(data, ncluster, fold_number, fraction, start_saving_epoch, max_epoch, output_dir, WD_threshold, AQ_threshold, \
-		cluster_loss_threshold, concensus_type, covariate=None, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5, verbose = False, \
+		cluster_loss_threshold, consensus_type, covariate=None, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5, verbose = False, \
 		beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5, save_epoch_freq = 5, start_fold = 0, stop_fold = None, check_outlier = True):
 	"""
 	cross_validated clustering function using Smile-GAN (recommended)
@@ -194,7 +194,7 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 		AQ_threshold: int, chosen AQ threhold for stopping criteria
 		cluster_loss_threshold: int, chosen cluster_loss threhold for stopping criteria
 		###load_model: bool, whether load one pre-saved checkpoint
-		concensus_type: string, the method used for deriving final clustering results with all models saved during CV
+		consensus_type: string, the method used for deriving final clustering results with all models saved during CV
 								choose between 'highest_matching_clustering' and 'consensus_clustering'
 		saved_model_name: str, the name of the saved model
 		lam: int, hyperparameter for cluster loss
@@ -254,12 +254,12 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 				print("****** Model not converged at max interation, Start retraining ******")
 				converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 
-	cluster_label, cluster_prob, mean_ari, std_ari = clustering_result(saved_models, ncluster, concensus_type, data, covariate)
+	cluster_label, cluster_prob, mean_ari, std_ari = clustering_result(saved_models, ncluster, consensus_type, data, covariate)
 	
 	pt_data = data.loc[data['diagnosis'] == 1][['participant_id','diagnosis']]
 	pt_data['cluster_label'] = cluster_label + 1
 
-	if concensus_type == "highest_matching_clustering":
+	if consensus_type == "highest_matching_clustering":
 		for i in range(ncluster):
 			pt_data['p'+str(i+1)] = cluster_prob[:,i]
 

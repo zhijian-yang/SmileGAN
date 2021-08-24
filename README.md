@@ -82,21 +82,21 @@ WD = 0.11
 AQ = 20
 cluster_loss = 0.0015
 
-## one parameter for concensus method
-concensus_type = "highest_matching_clustering"
+## one parameter for consensus method
+consensus_type = "highest_matching_clustering"
 ```
 
-When using the package, ***WD***, ***AQ***, ***cluster\_loss***, ***concensus\_type*** need to be chosen empirically:
+When using the package, ***WD***, ***AQ***, ***cluster\_loss***, ***consensus\_type*** need to be chosen empirically:
 
-***WD***: Wasserstein Distance measures the distance between generated PT data along each direction and real PT data clustered into . (**Recommended value**: 0.11-0.14)
+***WD***: Wasserstein Distance measures the distance between generated PT data along each direction and real PT data. (**Recommended value**: 0.11-0.14)
 
-***AQ***: Alternation Quantity measures the number of participants who change cluster labels during last three traninig epochs. Low AQ implies convergence of training. (**Recommended value**: 1/20 of PT sample size)
+***AQ***: Alteration Quantity measures the number of participants who change cluster labels during last three traninig epochs. Low AQ implies convergence of training. (**Recommended value**: 1/20 of PT sample size)
 
 ***cluster\_loss***: Cluster loss measures how well clustering function reconstruct sampled Z variable. (**Recommended value**: 0.0015-0.002)
 
-***concensus\_type***: Concensus_type need to be chosen from **"concensus\_clustering"** and **"highest\_matching\_clustering"**. It determines how the final concensus result is derived from k clustering results obtained through the k-fold hold-out CV procedure. **"highest\_matching\_clustering"** is recommended if Adjusted Random Index among k clustering results is greater than 0.3. Otherwise, **"concensus\_clustering"** might give more reliable concensus results. User can always use function **clustering\_result**, trained models and a different concensus\_type to rederive results with different concensus\_type without retraining.
+***consensus\_type***: Consensus_type need to be chosen from **"consensus\_clustering"** and **"highest\_matching\_clustering"**. It determines how the final consensus result is derived from k clustering results obtained through the k-fold hold-out CV procedure. **"highest\_matching\_clustering"** is recommended if Adjusted Random Index among k clustering results is greater than 0.3. Otherwise, **"consensus\_clustering"** might give more reliable consensus results. User can always use function **clustering\_result**, trained models and a different consensus\_type to rederive results with different consensus\_type without retraining.
 
-Some other parameters, ***lam***, ***mu***, ***batch_\size***, have default values but need to be changed in some cases:
+Some other parameters, ***lam***, ***mu***, ***batch\_size***, have default values but need to be changed in some cases:
 
 ***batch\_size***: Size of the batch for each training epoch. (Default to be 25) It is **necessary** to be reset to 1/10 - 1/20 of the PT sample size.
 
@@ -118,7 +118,7 @@ single_model_clustering(train_data, ncluster, start_saving_epoch, max_epoch,\
 fold_number = 10  # number of folds the leave-out cv runs
 data_fraction = 0.8 # fraction of data used in each fold
 cross_validated_clustering(train_data, ncluster, fold_number, data_fraction, start_saving_epoch, max_epoch,\
-					    output_dir, WD, AQ, cluster_loss, concensus_tpype, covariate=covariate)
+					    output_dir, WD, AQ, cluster_loss, consensus_tpype, covariate=covariate)
 ```
 
 **cross\_validated\_clustering** performs clustering with leave-out cross validation. It is the ***recommended*** function for clustering. Since the CV process may take long training time on a normal desktop computer, the function enables early stop and later resumption. Users can set ***stop\_fold*** to be early stopping point and ***start\_fold*** depending on previous stopping point. The function automatically saves an csv file with clustering results and returns the same dataframe.
