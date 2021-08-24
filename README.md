@@ -77,7 +77,7 @@ ncluster = 3
 start_saving_epoch = 6000
 max_epoch = 10000
 
-## three parameters for stopping threhold
+## three parameters for stopping threshold
 WD = 0.11
 AQ = 20
 cluster_loss = 0.0015
