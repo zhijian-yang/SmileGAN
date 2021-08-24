@@ -81,9 +81,29 @@ max_epoch = 10000
 WD = 0.11
 AQ = 20
 cluster_loss = 0.0015
+
+## one parameter for concensus method
+concensus_type = "highest_matching_clustering"
 ```
 
-When using the package, ***WD***, ***AQ***, ***cluster\_loss*** need to be chosen empirically. WD is recommended to be a value between 0.1-0.15, AQ is recommended to be 1/20 of patient numbers and cluster\_loss is recommended to be a value between 0.0015-0.002. A large value of ***start\_saving\_epoch*** can better guarantee the convergence of the model though requires longer training time.
+When using the package, ***WD***, ***AQ***, ***cluster\_loss***, ***concensus\_type*** need to be chosen empirically:
+
+***WD***: Wasserstein Distance measures the distance between generated PT data along each direction and real PT data clustered into . (**Recommended value**: 0.11-0.14)
+
+***AQ***: Alternation Quantity measures the number of participants who change cluster labels during last three traninig epochs. Low AQ implies convergence of training. (**Recommended value**: 1/20 of PT sample size)
+
+***cluster\_loss***: Cluster loss measures how well clustering function reconstruct sampled Z variable. (**Recommended value**: 0.0015-0.002)
+
+***concensus\_type***: Concensus_type need to be chosen from **"concensus\_clustering"** and **"highest\_matching\_clustering"**. It determines how the final concensus result is derived from k clustering results obtained through the k-fold hold-out CV procedure. **"highest\_matching\_clustering"** is recommended if Adjusted Random Index among k clustering results is greater than 0.3. Otherwise, **"concensus\_clustering"** might give more reliable concensus results. User can always use function **clustering\_result**, trained models and a different concensus\_type to rederive results with different concensus\_type without retraining.
+
+Some other parameters, ***lam***, ***mu***, ***batch_\size***, have default values but need to be changed in some cases:
+
+***batch\_size***: Size of the batch for each training epoch. (Default to be 25) It is **necessary** to be reset to 1/10 - 1/20 of the PT sample size.
+
+***lam***: coefficient controlling the relative importance of cluster\_loss in training objective function. (Default to be 9) 
+
+***mu***: coefficient controlling the relative importance of change\_loss in training objective function. (Default to be 5). Can be reset to 4 or 4.5 if PT and CN does not have great differences and cluster\_loss does not converge during training procedure. 
+
 
 
 ```bash
@@ -97,8 +117,8 @@ single_model_clustering(train_data, ncluster, start_saving_epoch, max_epoch,\
 ```bash				    
 fold_number = 10  # number of folds the leave-out cv runs
 data_fraction = 0.8 # fraction of data used in each fold
-cross_validated_clustering(train_data, ncluster, start_saving_epoch, max_epoch,\
-					    output_dir, WD, AQ, cluster_loss, covariate=covariate)
+cross_validated_clustering(train_data, ncluster, fold_number, data_fraction, start_saving_epoch, max_epoch,\
+					    output_dir, WD, AQ, cluster_loss, concensus_tpype, covariate=covariate)
 ```
 
 **cross\_validated\_clustering** performs clustering with leave-out cross validation. It is the ***recommended*** function for clustering. Since the CV process may take long training time on a normal desktop computer, the function enables early stop and later resumption. Users can set ***stop\_fold*** to be early stopping point and ***start\_fold*** depending on previous stopping point. The function automatically saves an csv file with clustering results and returns the same dataframe.

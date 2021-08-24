@@ -126,6 +126,9 @@ class Smile_GAN_train():
                 res_str_list = ["[%d], Mean_W_Distance: %.4f, TIME: %.4f" % (epoch,max_distance, t)]
                 res_str_list.extend(['W_Distances: %s' % [round(ele, 4) for ele in w_distances],'Subtype_Quantity: %s' %predicted_class])
 
+                if min(aq_loss_cluster_list[1])>0.4:
+                    return False
+
                 if len(w_distances)==model.opt.ncluster:
                     if max(max_distance_list) < self.opt.WD_threshold and max(aq_loss_cluster_list[0]) < self.opt.AQ_threshold\
                      and max(aq_loss_cluster_list[1])<self.opt.cluster_loss_threshold and epoch > self.opt.start_saving_epoch:
