@@ -74,8 +74,8 @@ covariate = pd.read_csv('train_cov.csv')
 
 output_dir = "PATH_OUTPUT_DIR"
 ncluster = 3
-start_saving_epoch = 6000
-max_epoch = 10000
+start_saving_epoch = 9000
+max_epoch = 14000
 
 ## three parameters for stopping threshold
 WD = 0.11
@@ -133,25 +133,17 @@ cluster_label, cluster_probabilities = clustering_result(model_dirs, ncluster, '
 ## Citation
 If you use this package for research, please cite the following papers:
 
-```bash
-@misc{yang2020smilegans,
-      title={Smile-GANs: Semi-supervised clustering via GANs for dissecting brain disease heterogeneity from medical images}, 
-      author={Zhijian Yang and Junhao Wen and Christos Davatzikos},
-      year={2020},
-      eprint={2006.15255},
-      archivePrefix={arXiv},
-      primaryClass={q-bio.QM}
-}
-```
 
 ```bash
-@misc{yang2021BrainHeterogeneity,
-      title={Disentangling brain heterogeneity via semi-supervised deep-learning and MRI: dimensional representations of Alzheimer's Disease}, 
-      author={Zhijian Yang and Ilya M. Nasrallah and Haochang Shou and Junhao Wen and Jimit Doshi and Mohamad Habes and Guray Erus and Ahmed Abdulkadir and Susan M. Resnick and David Wolk and Christos Davatzikos},
-      year={2021},
-      eprint={2102.12582},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG}
+@article{yang2021BrainHeterogeneity,
+author = {Yang, Zhijian and Nasrallah, Ilya and Shou, Haochang and Wen, Junhao and Doshi, Jimit and Habes, Mohamad and Erus, Guray and Abdulkadir, Ahmed and Resnick, Susan and Albert, Marilyn and Maruff, Paul and Fripp, Jurgen and Morris, John and Wolk, David and Davatzikos, Christos and Fan, Yong and Bashyam, Vishnu and Mamouiran, Elizabeth and Melhem, Randa},
+year = {2021},
+month = {12},
+pages = {},
+title = {A deep learning framework identifies dimensional representations of Alzheimer’s Disease from brain structure},
+volume = {12},
+journal = {Nature Communications},
+doi = {10.1038/s41467-021-26703-z}
 }
 ```
 
