@@ -136,7 +136,7 @@ If you use this package for research, please cite the following papers:
 
 ```bash
 @article{yang2021BrainHeterogeneity,
-author = {Yang, Zhijian and Nasrallah, Ilya and Shou, Haochang and Wen, Junhao and Doshi, Jimit and Habes, Mohamad and Erus, Guray and Abdulkadir, Ahmed and Resnick, Susan and Albert, Marilyn and Maruff, Paul and Fripp, Jurgen and Morris, John and Wolk, David and Davatzikos, Christos and Fan, Yong and Bashyam, Vishnu and Mamouiran, Elizabeth and Melhem, Randa},
+author = {Yang, Zhijian and Nasrallah, Ilya M. and Shou, Haochang and Wen, Junhao and Doshi, Jimit and Habes, Mohamad and Erus, Guray and Abdulkadir, Ahmed and Resnick, Susan M. and Albert, Marilyn S. and Maruff, Paul and Fripp, Jurgen and Morris, John C. and Wolk, David A. and Davatzikos, Christos and {iSTAGING Consortium} and {Baltimore Longitudinal Study of Aging (BLSA)} and {Alzheimer’s Disease Neuroimaging Initiative (ADNI)}},
 year = {2021},
 month = {12},
 pages = {},
