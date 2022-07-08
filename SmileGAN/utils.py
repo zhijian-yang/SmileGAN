@@ -98,7 +98,6 @@ def Covariate_correction(cn_data,cn_cov,pt_data,pt_cov):
     cn_cov = (cn_cov-np.amin(cn_cov, axis=0))/(np.amax(cn_cov, axis=0)-np.amin(cn_cov, axis=0))
     beta = np.transpose(LinearRegression().fit(cn_cov, cn_data).coef_)
     corrected_cn_data = cn_data-np.dot(cn_cov,beta)
-    corrected_pt_data = pt_data-np.dot(pt_cov,beta)
     return corrected_cn_data, corrected_pt_data
 
 def Data_normalization(cn_data,pt_data):

@@ -13,12 +13,12 @@ if __name__ == '__main__':
 	start_saving_epoch = 6000
 	max_epoch = 14000
 	WD = 0.14
-	AQ = 30
-	cluster_loss = 0.003
+	AQ = 60
+	cluster_loss = 0.002
 
 
-	cross_validated_clustering(train_data, ncluster, 3, 0.8, start_saving_epoch, max_epoch, output_dir, WD, AQ, cluster_loss,\
-		'highest_matching_clustering', batchSize=25, lipschitz_k=0.5)
+	cross_validated_clustering(train_data, ncluster, 4, 0.8, start_saving_epoch, max_epoch, output_dir, WD, AQ, cluster_loss,\
+		'highest_matching_clustering', batchSize=60, lipschitz_k=0.5)
 
 
 
