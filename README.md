@@ -19,14 +19,7 @@ Activate the virtual environment
 ```bash
 $ conda activate smilegan
 ```
-
-Install other SmileGAN package dependencies (go to the root folder of SmileGAN)
-
-```bash
-$ ./install_requirements.sh
-```
-
-Finally, we need to install SmileGAN from PyPi:
+Install SmileGAN from PyPi:
 
 ```bash
 $ pip install SmileGAN
@@ -102,7 +95,7 @@ Some other parameters, ***lam***, ***mu***, ***batch\_size***, have default valu
 
 ***lam***: coefficient controlling the relative importance of cluster\_loss in training objective function. (Default to be 9) 
 
-***mu***: coefficient controlling the relative importance of change\_loss in training objective function. (Default to be 5). Can be reset to 4 or 4.5 if PT and CN does not have great differences and cluster\_loss does not converge during training procedure. 
+***mu***: coefficient controlling the relative importance of change\_loss in training objective function. (Default to be 5). Can be reset to 5.5 or 6 if PT and CN does not have great differences and cluster\_loss does not converge during training procedure. 
 
 
 
@@ -124,14 +117,14 @@ cross_validated_clustering(train_data, ncluster, fold_number, data_fraction, sta
 **cross\_validated\_clustering** performs clustering with leave-out cross validation. It is the ***recommended*** function for clustering. Since the CV process may take long training time on a normal desktop computer, the function enables early stop and later resumption. Users can set ***stop\_fold*** to be early stopping point and ***start\_fold*** depending on previous stopping point. The function automatically saves an csv file with clustering results and returns the same dataframe.
 
 ```					    
-model_dirs = ['PATH_TO_CHECKPOINT1','PATH_TO_CHECKPOINT2',...] #list of paths to previously saved checkpoints (with name 'coverged_model_foldk' after cv process)
+model_dirs = ['PATH_TO_CHECKPOINT1','PATH_TO_CHECKPOINT2',...] #list of paths to previously saved checkpoints (with name 'converged_model_foldk' after cv process)
 cluster_label, cluster_probabilities = clustering_result(model_dirs, ncluster, 'highest_matching_clustering, train_data, covariate)
 ```
-**clustering\_result** is a function used for clustering patient data using previously saved models. Input data and covariate (optional) should be panda dataframe with same format shown before. Exactly same CN data used for training should be included while PT data can be any samples inside or outside of the training set. ***The function returns cluster labels of PT data following the order of PT in the provided dataframe.*** If ***consensus\_type*** is chosen to be ***'highest\_matching\_clustering***, probabilities of each cluster will also be returned. 
+**clustering\_result** is a function used for clustering patient data using previously saved models. Input data and covariate (optional) should be panda dataframe with same format shown before. Only PT data (can be inside or outside of training set), for which the user want to derive cluster memberships, need to be provided with diagnoses set to be 1.  ***The function returns cluster labels of PT data following the order of PT in the provided dataframe.*** If ***consensus\_type*** is chosen to be ***'highest\_matching\_clustering***, probabilities of each cluster will also be returned. 
 
 
 ## Citation
-If you use this package for research, please cite the following papers:
+If you use this package for research, please cite the following paper:
 
 
 ```bash

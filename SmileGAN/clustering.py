@@ -59,18 +59,20 @@ class Smile_GAN_train():
         return message
 
     def parse_data(self, data, covariate, random_seed, data_fraction):
-        cn_train_dataset, pt_train_dataset = parse_train_data(data, covariate, random_seed, data_fraction, self.opt.batchsize)
-        cn_eval_dataset, pt_eval_dataset = parse_validation_data(data, covariate)
+        cn_train_dataset, pt_train_dataset, correction_variables, normalization_variables = parse_train_data(data, covariate, random_seed, data_fraction, self.opt.batchsize)
+        cn_eval_dataset, pt_eval_dataset = parse_validation_data(data, covariate, correction_variables, normalization_variables)
         self.opt.nROI = pt_eval_dataset.shape[1]
         self.opt.n_val_data = pt_eval_dataset.shape[0]
-        return cn_train_dataset, pt_train_dataset, cn_eval_dataset, pt_eval_dataset
+        return cn_train_dataset, pt_train_dataset, cn_eval_dataset, pt_eval_dataset, correction_variables, normalization_variables
 
 
     def train(self, model_name, data, covariate, save_dir, random_seed=0, data_fraction=1, verbose=True, independent_ROI = True):
         if verbose: result_f = open("%s/results.txt" % save_dir, 'w')
 
-        cn_train_dataset, pt_train_dataset, eval_X, eval_Y = self.parse_data(data, covariate, random_seed, data_fraction)
-  
+        cn_train_dataset, pt_train_dataset, eval_X, eval_Y, correction_variables, normalization_variables = self.parse_data(data, covariate, random_seed, data_fraction)
+        self.opt.correction_variables = correction_variables
+        self.opt.normalization_variables = normalization_variables
+        
         # create_model
         model = SmileGAN()
         model.create(self.opt)

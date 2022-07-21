@@ -30,13 +30,12 @@ def model_filtering(model_dirs, ncluster, data, covariate=None):
 
 	Returns: list of index indicating outlier models
 
-	"""
-	_, validation_data = parse_validation_data(data, covariate)
-	
+	"""	
 	all_prediction_labels = []
 	for models in model_dirs:
 		model = SmileGAN()
 		model.load(models)
+		_, validation_data = parse_validation_data(data, covariate,model.opt.correction_variables,model.opt.normalization_variables)
 		all_prediction_labels.append(np.argmax(model.predict_cluster(validation_data), axis=1))
 	model_aris = [[] for _ in range(len(model_dirs))]
 	filtered_models = []
@@ -48,7 +47,7 @@ def model_filtering(model_dirs, ncluster, data, covariate=None):
 	median_aris = np.median(model_aris, axis=1)
 	for j in range(median_aris.shape[0]):
 		rest_aris = np.delete(median_aris,j)
-		if (median_aris[j]-np.mean(rest_aris))/np.std(rest_aris)<-2:
+		if (median_aris[j]-np.mean(rest_aris))/np.std(rest_aris)<-1.5:
 			filtered_models.append(j)
 
 	return filtered_models
@@ -77,13 +76,13 @@ def clustering_result(model_dirs, ncluster, consensus_type, data, covariate=None
 	Returns: clustering outputs.
 
 	"""
-	_, validation_data = parse_validation_data(data, covariate)
 
 	all_prediction_labels = []
 	all_prediction_probabilities = []
 	for models in model_dirs:
 		model = SmileGAN()
 		model.load(models)
+		_, validation_data = parse_validation_data(data, covariate,model.opt.correction_variables,model.opt.normalization_variables)
 		all_prediction_labels.append(np.argmax(model.predict_cluster(validation_data), axis=1))
 		all_prediction_probabilities.append(model.predict_cluster(validation_data))
 
@@ -223,13 +222,13 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 		cluster_loss_threshold, lam=lam, mu=mu, batchSize=batchSize, \
 		lipschitz_k = lipschitz_k, beta1 = beta1, lr = lr, max_gnorm = max_gnorm, eval_freq = eval_freq, save_epoch_freq = save_epoch_freq)
 
-	saved_models = [os.path.join(output_dir, 'coverged_model_fold'+str(i)) for i in range(fold_number)]
+	saved_models = [os.path.join(output_dir, 'converged_model_fold'+str(i)) for i in range(fold_number)]
 	
 	if stop_fold == None:
 		stop_fold = fold_number
 	for i in range(start_fold, stop_fold):
 		print('****** Starting training of Fold '+str(i)+" ******")
-		saved_model_name = 'coverged_model_fold'+str(i)
+		saved_model_name = 'converged_model_fold'+str(i)
 		converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, random_seed=i, data_fraction = fraction, verbose = verbose)
 		while not converge:
 			print("****** Model not converging or not converged at max interation, Start retraining ******")
@@ -248,7 +247,7 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 	
 		for i in outlier_models:
 			print('****** Starting training of Fold '+str(i)+" ******")
-			saved_model_name = 'coverged_model_fold'+str(i)
+			saved_model_name = 'converged_model_fold'+str(i)
 			converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, random_seed=i, data_fraction = fraction, verbose = verbose)
 			while not converge:
 				print("****** Model not converged at max interation, Start retraining ******")
