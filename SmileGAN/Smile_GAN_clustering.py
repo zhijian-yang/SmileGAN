@@ -61,12 +61,11 @@ def calculate_ari(prediction_labels):
 
 
 
-def clustering_result(model_dirs, ncluster, consensus_type, data, covariate=None):
+def clustering_result(model_dirs, consensus_type, data, covariate=None):
 	"""
 	Function used for derive clustering results from several saved models
 	Args:
 		model_dirs: list, list of dirs of all saved models
-		ncluster: int, number of defined clusters
 		consensus_type: string, the method used for deriving final clustering results with all models derived through CV
 								choose between 'highest_matching_clustering' and 'consensus_clustering'
 		data, data_frame, dataframe with same format as training data. CN data must be exactly same as CN data in training dataframe while 
@@ -82,6 +81,7 @@ def clustering_result(model_dirs, ncluster, consensus_type, data, covariate=None
 	for models in model_dirs:
 		model = SmileGAN()
 		model.load(models)
+		ncluster = model.opt.ncluster
 		_, validation_data = parse_validation_data(data, covariate,model.opt.correction_variables,model.opt.normalization_variables)
 		all_prediction_labels.append(np.argmax(model.predict_cluster(validation_data), axis=1))
 		all_prediction_probabilities.append(model.predict_cluster(validation_data))
@@ -155,7 +155,7 @@ def single_model_clustering(data, ncluster, start_saving_epoch, max_epoch, outpu
 		print("****** Model not converging or not converged at max interation, Start retraining ******")
 		converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, verbose = verbose)
 
-	cluster_label, cluster_prob, mean_ari, std_ari = clustering_result([os.path.join(output_dir,saved_model_name)], ncluster, 'highest_matching_clustering', data, covariate)
+	cluster_label, cluster_prob, mean_ari, std_ari = clustering_result([os.path.join(output_dir,saved_model_name)], 'highest_matching_clustering', data, covariate)
 	pt_data = data.loc[data['diagnosis'] == 1][['participant_id','diagnosis']]
 	pt_data['cluster_label'] = cluster_label + 1
 
@@ -253,7 +253,7 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 				print("****** Model not converged at max interation, Start retraining ******")
 				converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, random_seed=i, data_fraction = fraction, verbose = verbose)
 
-	cluster_label, cluster_prob, mean_ari, std_ari = clustering_result(saved_models, ncluster, consensus_type, data, covariate)
+	cluster_label, cluster_prob, mean_ari, std_ari = clustering_result(saved_models, consensus_type, data, covariate)
 	
 	pt_data = data.loc[data['diagnosis'] == 1][['participant_id','diagnosis']]
 	pt_data['cluster_label'] = cluster_label + 1
