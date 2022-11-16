@@ -71,7 +71,7 @@ start_saving_epoch = 9000
 max_epoch = 14000
 
 ## three parameters for stopping threshold
-WD = 0.11
+WD = 0.10
 AQ = 20
 cluster_loss = 0.0015
 
@@ -93,11 +93,9 @@ Some other parameters, ***lam***, ***mu***, ***batch\_size***, have default valu
 
 ***batch\_size***: Size of the batch for each training epoch. (Default to be 25) It is **necessary** to be reset to 1/10 - 1/20 of the PT sample size.
 
-***lam***: coefficient controlling the relative importance of cluster\_loss in training objective function. (Default to be 9) 
+***lam***: coefficient controlling the relative importance of cluster\_loss in the training objective function. (Default to be 9) 
 
-***mu***: coefficient controlling the relative importance of change\_loss in training objective function. (Default to be 5). Can be reset to 5.5 or 6 if PT and CN does not have great differences and cluster\_loss does not converge during training procedure. 
-
-
+***mu***: coefficient controlling the relative importance of change\_loss in the training objective function. (Default to be 5). It is **necessary** to try different values of ***mu*** (***mu*** = 1-7), and chose the value leading to the highest **ARI** (Adjusted Random Index).
 
 ```bash
 single_model_clustering(train_data, ncluster, start_saving_epoch, max_epoch,\
@@ -114,7 +112,7 @@ cross_validated_clustering(train_data, ncluster, fold_number, data_fraction, sta
 					    output_dir, WD, AQ, cluster_loss, consensus_tpype, covariate=covariate)
 ```
 
-**cross\_validated\_clustering** performs clustering with leave-out cross validation. It is the ***recommended*** function for clustering. Since the CV process may take long training time on a normal desktop computer, the function enables early stop and later resumption. Users can set ***stop\_fold*** to be early stopping point and ***start\_fold*** depending on previous stopping point. The function automatically saves an csv file with clustering results and returns the same dataframe.
+**cross\_validated\_clustering** performs clustering with leave-out cross validation. It is the ***recommended*** function for clustering. Since the CV process may take long training time on a normal desktop computer, the function enables early stop and later resumption. Users can set ***stop\_fold*** to be early stopping point and ***start\_fold*** depending on previous stopping point. The function automatically saves an csv file with clustering results and the mean ARI value.
 
 ```					    
 model_dirs = ['PATH_TO_CHECKPOINT1','PATH_TO_CHECKPOINT2',...] #list of paths to previously saved checkpoints (with name 'converged_model_foldk' after cv process)

@@ -66,7 +66,7 @@ class Smile_GAN_train():
         return cn_train_dataset, pt_train_dataset, cn_eval_dataset, pt_eval_dataset, correction_variables, normalization_variables
 
 
-    def train(self, model_name, data, covariate, save_dir, random_seed=0, data_fraction=1, verbose=True, independent_ROI = True):
+    def train(self, model_name, data, covariate, save_dir, random_seed=0, data_fraction=1, verbose=True, independent_ROI = True, std_in_wdistance = False):
         if verbose: result_f = open("%s/results.txt" % save_dir, 'w')
 
         cn_train_dataset, pt_train_dataset, eval_X, eval_Y, correction_variables, normalization_variables = self.parse_data(data, covariate, random_seed, data_fraction)
@@ -117,7 +117,7 @@ class Smile_GAN_train():
                 predicted_label,predicted_class = label_change(model,eval_Y,self.opt)
                 total_label_change = np.count_nonzero(np.absolute(np.array(predicted_label)-np.array(predicted_label_past))) 
                 predicted_label_past = predicted_label
-                max_distance, w_distances = eval_w_distances(eval_X, eval_Y, model, independent_ROI)
+                max_distance, w_distances = eval_w_distances(eval_X, eval_Y, model, independent_ROI, std_in_wdistance)
                 max_distance_list.append(max_distance)
                 max_distance_list.pop(0)
                 aq_loss_cluster_list[0].append(total_label_change)

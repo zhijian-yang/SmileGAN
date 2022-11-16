@@ -169,7 +169,7 @@ def single_model_clustering(data, ncluster, start_saving_epoch, max_epoch, outpu
 
 def cross_validated_clustering(data, ncluster, fold_number, fraction, start_saving_epoch, max_epoch, output_dir, WD_threshold, AQ_threshold, \
 		cluster_loss_threshold, consensus_type, covariate=None, lam=9, mu=5, batchSize=25, lipschitz_k = 0.5, verbose = False, \
-		beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5, save_epoch_freq = 5, start_fold = 0, stop_fold = None, check_outlier = True):
+		beta1 = 0.5, lr = 0.0002, max_gnorm = 100, eval_freq = 5, save_epoch_freq = 5, start_fold = 0, stop_fold = None, check_outlier = True, std_in_WD = False):
 	"""
 	cross_validated clustering function using Smile-GAN (recommended)
 	Args:
@@ -211,7 +211,7 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 		stop_fold: int, indicate the index of fold at which the cv early stop,
 							  used for stopping cv process eartly and resuming later; set defaultly to be None and cv will not stop till the end
 		check_outlier: bool, whether check outlier model (potential unsuccessful model) after cv process and retrain the fold
-
+		std_in_WD: bool, related to WD metric; whether include standard deviation when calculating distances between generated and real features
 	Returns: clustering outputs.
 
 	"""
@@ -229,10 +229,10 @@ def cross_validated_clustering(data, ncluster, fold_number, fraction, start_savi
 	for i in range(start_fold, stop_fold):
 		print('****** Starting training of Fold '+str(i)+" ******")
 		saved_model_name = 'converged_model_fold'+str(i)
-		converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, random_seed=i, data_fraction = fraction, verbose = verbose)
+		converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, random_seed=i, data_fraction = fraction, verbose = verbose, std_in_wdistance = std_in_WD)
 		while not converge:
 			print("****** Model not converging or not converged at max interation, Start retraining ******")
-			converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, random_seed=i, data_fraction = fraction, verbose = verbose)
+			converge = Smile_GAN_model.train(saved_model_name, data, covariate, output_dir, random_seed=i, data_fraction = fraction, verbose = verbose, std_in_wdistance = std_in_WD)
 
 	if check_outlier:
 		print('****** Start Checking outlier models ******')
