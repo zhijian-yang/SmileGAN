@@ -31,7 +31,7 @@ def cal_w_distance_with_cov(mean_1,mean_2,std_1,std_2):
 def cal_validate_distance(model,mean,std,eva_data,independent,include_std):
     predicted_z=model.predict_cluster(eva_data)
     cluster=[[]for k in range(model.opt.ncluster)]
-    distance=[1000 for m in range(model.opt.ncluster)]
+    distance=[float('inf') for m in range(model.opt.ncluster)]
     adjusted_eva_data=eva_data.detach().numpy()
     for i in range(predicted_z.shape[0]):
         a=predicted_z[i].tolist().index(max(predicted_z[i].tolist()))
@@ -45,11 +45,7 @@ def cal_validate_distance(model,mean,std,eva_data,independent,include_std):
             else:
                 cluster_std=np.cov(np.transpose(np.array(cluster[j])))
                 distance[j]=cal_w_distance_with_cov(mean[j],cluster_mean,std[j],cluster_std)
-    output=[0 for _ in range(model.opt.ncluster)]
-    for k in range(model.opt.ncluster):
-        if distance[k]!=1000:
-            output[k] = distance[k]
-    return np.mean(output),output
+    return np.mean(distance),distance
       
 def eval_w_distances(real_X,real_Y,model,independent,include_std):
     predict_Y=[]
