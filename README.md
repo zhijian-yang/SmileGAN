@@ -29,7 +29,7 @@ $ pip install SmileGAN
 
 
 ## Input structure
-The main functions of SmileGAN basically take two Panda dataframes as data inputs, **data** and **covariate** (optional). Columns with the names *'participant_id'* and *diagnosis* must exist in both dataframes. Some conventions for the group label/diagnosis: -1 represents healthy control (CN) and 1 represents patient (PT); categorical variables, such as sex, should be encoded as numbers: Female for 0 and Male for 1, for example.
+The main functions of SmileGAN basically take two Panda dataframes as data inputs: **data** and **covariate** (optional). Columns with the names *'participant_id'* and *diagnosis* must exist in both dataframes. Some conventions for the group label/diagnosis: -1 represents healthy control (CN) and 1 represents patient (PT); categorical variables, such as sex, should be encoded as numbers: Female for 0 and Male for 1, for example.
 
 Example for **data**:
 
@@ -92,11 +92,12 @@ When using the package, ***WD***, ***AQ***, ***cluster\_loss***, ***consensus\_t
 
 Some other parameters, ***lam***, ***mu***, ***batch\_size***, have default values but need to be changed in some cases:
 
-***batch\_size***: Size of the batch for each training epoch. (Default to be 25.) It is **necessary** to be reset to 1/10 - 1/20 of the PT sample size.
+***batch\_size***: Size of the batch for each training epoch. (Default to be 25.) It is **necessary** to reset it to 1/10 - 1/20 of the PT sample size.
 
-***lam***: coefficient controlling the relative importance of cluster\_loss in the training objective function. (Default to be 9) 
+***lam***: coefficient controlling the relative importance of cluster\_loss in the training objective function. (Default to be 9).
 
 ***mu***: coefficient controlling the relative importance of change\_loss in the training objective function. (Default to be 5). It is **necessary** to try different values of ***mu*** (***mu*** = 1-7), and choose the value leading to the highest **ARI** (Adjusted Random Index).
+
 
 ```bash
 single_model_clustering(train_data, ncluster, start_saving_epoch, max_epoch,\
