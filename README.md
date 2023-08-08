@@ -1,5 +1,5 @@
 # Smile-GAN
-Smile-GAN is a semi-supervised clustering method which is designed to identify disease-related heterogeneity among the patient group. The model effectively avoid variations among normal control (CN) group and cluster patient based on disease related variations only. Semi-supervised clustering of Smile-GAN is achieved through joint training of the mapping and clustering function, where the mapping function can map CN subjects along different mapping directions depending on disease-related variations.
+Smile-GAN is a semi-supervised clustering method which is designed to identify disease-related heterogeneity among the patient group. The model effectively avoids variations among the normal control (CN) group and clusters patients based on disease-related variations only. Semi-supervised clustering of Smile-GAN is achieved through joint training of the mapping and clustering functions, where the mapping function can map CN subjects along different mapping directions depending on disease-related variations.
 
 ![image info](./datasets/Smile-GAN.png)
 
@@ -7,9 +7,10 @@ Smile-GAN is a semi-supervised clustering method which is designed to identify d
 Copyright (c) 2016 University of Pennsylvania. All rights reserved. See[ https://www.cbica.upenn.edu/sbia/software/license.html](https://www.cbica.upenn.edu/sbia/software/license.html)
 
 ## Installation
-We highly recommend the users to install **Anaconda3** on your machine. After installing Anaconda3, Smile-GAN can be used following this procedure:
+We highly recommend that users install **Anaconda3** on their machines. After installing Anaconda3, Smile-GAN can be used following this procedure:
 
-We recommend the users to use the Conda virtual environment:
+We recommend that users use the Conda virtual environment:
+
 
 ```bash
 $ conda create --name smilegan python=3.8
@@ -28,7 +29,7 @@ $ pip install SmileGAN
 
 
 ## Input structure
-Main functions of SmileGAN basically takes two panda dataframes as data inputs, **data** and **covariate** (optional). Columns with name *'participant_id'* and *diagnosis* must exist in both dataframes. Some conventions for the group label/diagnosis: -1 represents healthy control (CN) and 1 represents patient (PT); categorical variables, such as sex, should be encoded to numbers: Female for 0 and Male for 1, for example. 
+The main functions of SmileGAN basically take two Panda dataframes as data inputs, **data** and **covariate** (optional). Columns with the names *'participant_id'* and *diagnosis* must exist in both dataframes. Some conventions for the group label/diagnosis: -1 represents healthy control (CN) and 1 represents patient (PT); categorical variables, such as sex, should be encoded as numbers: Female for 0 and Male for 1, for example.
 
 Example for **data**:
 
@@ -54,7 +55,7 @@ subject-6            1         62.5   0
 ```
 
 ## Example
-We offer a toy dataset in the folder of SmileGAN/dataset.
+We offer a toy dataset in the folder "SmileGAN/dataset".
 
 **Runing SmileGAN for clustering CN vs Subtype1 vs Subtype2 vs ...**
 
@@ -83,25 +84,25 @@ When using the package, ***WD***, ***AQ***, ***cluster\_loss***, ***consensus\_t
 
 ***WD***: Wasserstein Distance measures the distance between generated PT data along each direction and real PT data. (**Recommended value**: 0.11-0.14)
 
-***AQ***: Alteration Quantity measures the number of participants who change cluster labels during last three traninig epochs. Low AQ implies convergence of training. (**Recommended value**: 1/20 of PT sample size)
+***AQ***: Alteration Quantity measures the number of participants who change cluster labels during the last three training epochs. Low AQ implies convergence in training. (**Recommended value**: 1/20 of the PT sample size)
 
-***cluster\_loss***: Cluster loss measures how well clustering function reconstruct sampled Z variable. (**Recommended value**: 0.0015-0.002)
+***cluster\_loss***: Cluster loss measures how well the clustering function reconstructs the sampled Z variable. (**Recommended value**: 0.0015-0.002)
 
-***consensus\_type***: Consensus_type need to be chosen from **"consensus\_clustering"** and **"highest\_matching\_clustering"**. It determines how the final consensus result is derived from k clustering results obtained through the k-fold hold-out CV procedure. **"highest\_matching\_clustering"** is recommended if Adjusted Random Index among k clustering results is greater than 0.3. Otherwise, **"consensus\_clustering"** might give more reliable consensus results. User can always use function **clustering\_result**, trained models and a different consensus\_type to rederive results with different consensus\_type without retraining.
+***consensus\_type***: Consensus_type needs to be chosen from **"consensus\_clustering"** and **"highest\_matching\_clustering"**. It determines how the final consensus result is derived from the k clustering results obtained through the k-fold hold-out CV procedure. **"highest\_matching\_clustering"** is recommended if the Adjusted Random Index among k clustering results is greater than 0.3. Otherwise, **"consensus\_clustering"** might give more reliable consensus results. The user can always use function **clustering\_result**, trained models, and a different consensus\_type to rederive results with a different consensus\_type without retraining.
 
 Some other parameters, ***lam***, ***mu***, ***batch\_size***, have default values but need to be changed in some cases:
 
-***batch\_size***: Size of the batch for each training epoch. (Default to be 25) It is **necessary** to be reset to 1/10 - 1/20 of the PT sample size.
+***batch\_size***: Size of the batch for each training epoch. (Default to be 25.) It is **necessary** to be reset to 1/10 - 1/20 of the PT sample size.
 
 ***lam***: coefficient controlling the relative importance of cluster\_loss in the training objective function. (Default to be 9) 
 
-***mu***: coefficient controlling the relative importance of change\_loss in the training objective function. (Default to be 5). It is **necessary** to try different values of ***mu*** (***mu*** = 1-7), and chose the value leading to the highest **ARI** (Adjusted Random Index).
+***mu***: coefficient controlling the relative importance of change\_loss in the training objective function. (Default to be 5). It is **necessary** to try different values of ***mu*** (***mu*** = 1-7), and choose the value leading to the highest **ARI** (Adjusted Random Index).
 
 ```bash
 single_model_clustering(train_data, ncluster, start_saving_epoch, max_epoch,\
 					    output_dir, WD, AQ, cluster_loss, covariate=covariate)
 ```
-**single\_model\_clustering** performs clustering without cross validation. Since only one model is trained with this function, the model may be not representative or reproducible. Therefore, this function is ***not recommended***. The function automatically saves an csv file with clustering results and returns the same dataframe.
+**single\_model\_clustering** performs clustering without cross validation. Since only one model is trained with this function, the model may not be representative or reproducible. Therefore, this function is ***not recommended***. The function automatically saves a CSV file with clustering results and returns the same dataframe.
 
 
 
@@ -112,13 +113,13 @@ cross_validated_clustering(train_data, ncluster, fold_number, data_fraction, sta
 					    output_dir, WD, AQ, cluster_loss, consensus_tpype, covariate=covariate)
 ```
 
-**cross\_validated\_clustering** performs clustering with leave-out cross validation. It is the ***recommended*** function for clustering. Since the CV process may take long training time on a normal desktop computer, the function enables early stop and later resumption. Users can set ***stop\_fold*** to be early stopping point and ***start\_fold*** depending on previous stopping point. The function automatically saves an csv file with clustering results and the mean ARI value.
+**cross\_validated\_clustering** performs clustering with leave-out cross validation. It is the ***recommended*** function for clustering. Since the CV process may take a long training time on a normal desktop computer, the function enables an early stop and later resumption. Users can set ***stop\_fold*** to be an early stopping point and ***start\_fold*** depending on the previous stopping point. The function automatically saves a CSV file with clustering results and the mean ARI value.
 
 ```					    
 model_dirs = ['PATH_TO_CHECKPOINT1','PATH_TO_CHECKPOINT2',...] #list of paths to previously saved checkpoints (with name 'converged_model_foldk' after cv process)
 cluster_label, cluster_probabilities, _, _ = clustering_result(model_dirs, 'highest_matching_clustering', train_data, covariate)
 ```
-**clustering\_result** is a function used for clustering patient data using previously saved models. Input data and covariate (optional) should be panda dataframe with same format shown before. Only PT data (can be inside or outside of training set), for which the user want to derive cluster memberships, need to be provided with diagnoses set to be 1.  ***The function returns cluster labels of PT data following the order of PT in the provided dataframe.*** If ***consensus\_type*** is chosen to be ***'highest\_matching\_clustering***, probabilities of each cluster will also be returned. 
+**clustering\_result** is a function used for clustering patient data using previously saved models. Input data and covariate (optional) should be Panda dataframes with the same format shown before. Only PT data (which can be inside or outside of the training set) for which the user wants to derive cluster memberships needs to be provided, with diagnoses set to 1. ***The function returns cluster labels of PT data following the order of PT in the provided dataframe. *** If ***consensus\_type*** is chosen to be ***'highest\_matching\_clustering***, probabilities of each cluster will also be returned. 
 
 
 ## Citation
